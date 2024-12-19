@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "io.github.kgriff0n.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "CommandManagerMixin",
+    "PlayerEntityMixin",
+    "PlayerManagerAccessor",
+    "PlayerManagerInvoker",
+    "PlayerManagerMixin",
+    "ServerPlayNetworkHandlerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+	}
+}
