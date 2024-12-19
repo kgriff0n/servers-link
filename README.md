@@ -3,7 +3,7 @@
 Servers Link is a `server-side` mod that lets you link multiple servers together.  
 With this mod, players' inventory, achievements, chat *(including private messages)* and the player list are synchronized between the servers.
 
-If you want to see this mod in action, check out this video: https://www.youtube.com/watch?v=-_P2IAu5Y0A  
+If you want to see this mod in action, check out this video : https://www.youtube.com/watch?v=-_P2IAu5Y0A
 A better video with more details may come in the future.
 
 > [!IMPORTANT]
