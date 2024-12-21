@@ -9,7 +9,8 @@ A better video with more details may come in the future.
 > [!IMPORTANT]
 > This mod is still in beta, so please report any bugs you find.
 
-If you want to install and configure this mod, continue reading this [README](README.md). If you want a more detailed explanation of how this mod works, or if you're a developer, take a look at the [EXPLANATIONS](EXPLANATIONS.md) and [USAGE](USAGE.md).
+If you want to install and configure this mod, continue reading this [README](README.md). If you want a more detailed explanation of how this mod works, or if you're a developer, take a look at the [EXPLANATIONS](EXPLANATIONS.md) and [USAGE](USAGE.md).  
+If you have any questions, feel free to ask on [discord](https://discord.com/invite/ZeHm57BEyt)!
 
 ---
 
