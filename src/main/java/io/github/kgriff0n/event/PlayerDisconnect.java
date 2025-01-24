@@ -43,7 +43,6 @@ public class PlayerDisconnect implements ServerPlayConnectionEvents.Disconnect {
             SubServer connection = SubServer.getInstance();
             /* Send packet ONLY if the player is not transferred */
             if (!ServersLinkUtil.getPreventDisconnect().contains(uuid)) {
-                ServersLink.LOGGER.info("Send disconnect packet");
                 connection.send(packet);
                 try {
                     /* Force inventory saving */
