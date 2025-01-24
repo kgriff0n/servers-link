@@ -76,7 +76,7 @@ public class PlayerJoin implements ServerPlayConnectionEvents.Join {
                 /* Delete the fake player */
                 SERVER.getPlayerManager().getPlayerList().removeIf(player -> player.getName().equals(newPlayer.getName()));
                 /* Send player information to other servers */
-                connection.send(dummyPlayer);
+                if (Config.syncPlayerList) connection.send(dummyPlayer);
                 connection.send(new PlayerAcknowledgementPacket(Config.serverName, newPlayer.getUuid(), newPlayer.getName().getString()));
             }
         }
