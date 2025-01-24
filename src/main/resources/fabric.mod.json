@@ -3,15 +3,15 @@
 	"id": "servers-link",
 	"version": "${version}",
 	"name": "Servers Link",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "Link multiple servers together and synchronize players list, chat, inventory...",
 	"authors": [
-		"Me!"
+		"KGriffon"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://modrinth.com/mod/servers-link",
+		"sources": "https://github.com/kgriff0n/servers-link"
 	},
-	"license": "CC0-1.0",
+	"license": "MIT",
 	"icon": "assets/servers-link/icon.png",
 	"environment": "*",
 	"entrypoints": {
@@ -27,8 +27,5 @@
 		"minecraft": "~1.21.1",
 		"java": ">=21",
 		"fabric-api": "*"
-	},
-	"suggests": {
-		"another-mod": "*"
 	}
 }
