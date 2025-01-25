@@ -8,7 +8,6 @@
     "PlayerManagerAccessor",
     "PlayerManagerInvoker",
     "PlayerManagerMixin",
-    "ServerPlayConnectionEventsMixin",
     "ServerPlayNetworkHandlerMixin"
   ],
   "injectors": {
