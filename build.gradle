@@ -27,7 +27,7 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	include(modImplementation('me.lucko:fabric-permissions-api:0.3.1'))
+	include(modImplementation("me.lucko:fabric-permissions-api:${project.permission_api_version}"))
 }
 
 processResources {

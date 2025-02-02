@@ -13,6 +13,7 @@ import io.github.kgriff0n.util.ServerInfo;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -20,6 +21,7 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
+import java.util.EnumSet;
 import java.util.Locale;
 
 import static net.minecraft.server.command.CommandManager.argument;
@@ -135,7 +137,7 @@ public class ServerCommand {
         String server = ServersLinkUtil.whereIs(player.getUuid());
         if (sender == null) return 0;
         if (server.equals(Config.serverName)) {
-            sender.teleport(player.getServerWorld(), player.getX(), player.getY(), player.getZ(), player.getYaw(), player.getPitch());
+            sender.teleport(player.getServerWorld(), player.getX(), player.getY(), player.getZ(), EnumSet.noneOf(PositionFlag.class), player.getYaw(), player.getPitch(), false);
         } else {
             TeleportationRequestPacket request = new TeleportationRequestPacket(player.getUuid(), sender.getUuid(), Config.serverName, server);
             if (Config.isHub) {
@@ -152,7 +154,7 @@ public class ServerCommand {
         String server = ServersLinkUtil.whereIs(player.getUuid());
         if (sender == null) return 0;
         if (server.equals(Config.serverName)) {
-            player.teleport(sender.getServerWorld(), sender.getX(), sender.getY(), sender.getZ(), sender.getYaw(), sender.getPitch());
+            player.teleport(sender.getServerWorld(), sender.getX(), sender.getY(), sender.getZ(), EnumSet.noneOf(PositionFlag.class), sender.getYaw(), sender.getPitch(), false);
         } else {
             TeleportationAcceptPacket accept = new TeleportationAcceptPacket(sender.getX(), sender.getY(), sender.getZ(), player.getUuid(), server, Config.serverName);
             if (Config.isHub) {

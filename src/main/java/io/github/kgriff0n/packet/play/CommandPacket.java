@@ -34,7 +34,7 @@ public class CommandPacket implements Packet {
             ServerPlayerEntity player = ServersLinkUtil.getDummyPlayer(uuid);
             if (player != null) {
                 ServerCommandSource source = new ServerCommandSource(
-                        player,
+                        player.getCommandOutput(),
                         player.getPos(),
                         player.getRotationClient(),
                         player.getWorld() instanceof ServerWorld ? (ServerWorld)player.getWorld() : null,
