@@ -51,7 +51,7 @@ public class ServerCommand {
                                         .executes(context -> join(EntityArgumentType.getPlayer(context, "player"), StringArgumentType.getString(context, "server")))
                                         .then(argument("position", Vec3ArgumentType.vec3())
                                                 .requires(Permissions.require("server.join.position", 2))
-                                                .executes(context -> joinPos(context.getSource().getPlayer(), StringArgumentType.getString(context, "server"), Vec3ArgumentType.getVec3(context, "position")))
+                                                .executes(context -> joinPos(EntityArgumentType.getPlayer(context, "player"), StringArgumentType.getString(context, "server"), Vec3ArgumentType.getVec3(context, "position")))
                                         )
                                 )
                         )
