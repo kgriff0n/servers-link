@@ -136,12 +136,13 @@ whitelisted-ip=
 
 This mod adds the `server` command and the following sub-commands.
 
-|           Sub-command           | Description                                 |         Permissions |
-|:-------------------------------:|---------------------------------------------|--------------------:|
-|              list               | Lists all connected servers.                |       `server.list` |
-|      join `[server-name]`       | Joins the server.                           |       `server.join` |
-| join `[server-name]` `[player]` | Makes the player join the server.           | `server.join.other` |
-|       whereis `[player]`        | Indicates on which server the player is.    |    `server.whereis` |
-|         tpto `[player]`         | Teleports you to the player.                |       `server.tpto` |
-|        tphere `[player]`        | Teleports the player to your position.      |     `server.tphere` |
-|         run `[command]`         | Allows you to run a command on all servers. |        `server.run` |
+|                 Sub-command                  | Description                                            |              Permissions |
+|:--------------------------------------------:|--------------------------------------------------------|-------------------------:|
+|                     list                     | Lists all connected servers.                           |            `server.list` |
+|             join `[server-name]`             | Joins the server.                                      |            `server.join` |
+|       join `[server-name]` `[player]`        | Makes the player join the server.                      |      `server.join.other` |
+| join `[server-name]` `[player]` `[position]` | Makes the player join the server at the given position |   `server.join.position` |
+|              whereis `[player]`              | Indicates on which server the player is.               |         `server.whereis` |
+|               tpto `[player]`                | Teleports you to the player.                           |            `server.tpto` |
+|              tphere `[player]`               | Teleports the player to your position.                 |          `server.tphere` |
+|               run `[command]`                | Allows you to run a command on all servers.            |             `server.run` |

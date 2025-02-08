@@ -13,6 +13,7 @@ import io.github.kgriff0n.util.ServerInfo;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.command.argument.Vec3ArgumentType;
 import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -20,6 +21,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.EnumSet;
 import java.util.Locale;
@@ -47,6 +49,10 @@ public class ServerCommand {
                                 .then(argument("player", EntityArgumentType.player())
                                         .requires(Permissions.require("server.join.other", 2))
                                         .executes(context -> join(EntityArgumentType.getPlayer(context, "player"), StringArgumentType.getString(context, "server")))
+                                        .then(argument("position", Vec3ArgumentType.vec3())
+                                                .requires(Permissions.require("server.join.position", 2))
+                                                .executes(context -> joinPos(context.getSource().getPlayer(), StringArgumentType.getString(context, "server"), Vec3ArgumentType.getVec3(context, "position")))
+                                        )
                                 )
                         )
 
@@ -124,6 +130,11 @@ public class ServerCommand {
             }
         }
         return Command.SINGLE_SUCCESS;
+    }
+
+    private static int joinPos(ServerPlayerEntity player, String serverName, Vec3d pos) {
+        ((IPlayerServersLink) player).servers_link$setServerPos(serverName, pos);
+        return join(player, serverName);
     }
 
     private static int whereis(ServerCommandSource source, ServerPlayerEntity player) {
