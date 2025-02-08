@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "io.github.kgriff0n.mixin.compat",
+  "plugin": "io.github.kgriff0n.mixin.compat.MixinCompatPlugin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "PacketPatcherMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

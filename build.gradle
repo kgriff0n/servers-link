@@ -17,6 +17,7 @@ repositories {
 	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
 	// for more information about repositories.
 	mavenCentral()
+	maven { url 'https://maven.nucleoid.xyz' }
 }
 
 dependencies {
@@ -28,6 +29,9 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	include(modImplementation("me.lucko:fabric-permissions-api:${project.permission_api_version}"))
+
+	// Compat
+	modCompileOnly "eu.pb4:polymer-core:${project.polymer_version}"
 }
 
 processResources {
