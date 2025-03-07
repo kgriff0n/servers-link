@@ -44,14 +44,16 @@ public class PlayerDisconnect implements ServerPlayConnectionEvents.Disconnect {
             /* Send packet ONLY if the player is not transferred */
             if (!ServersLinkUtil.getPreventDisconnect().contains(uuid)) {
                 connection.send(packet);
-                try {
-                    /* Force inventory saving */
-                    if (Config.syncPlayerData) {
+                /* Force inventory saving */
+                if (Config.syncPlayerData) {
+                    SERVER.execute(() -> {
                         ((PlayerManagerInvoker) SERVER.getPlayerManager()).servers_link$savePlayerData(serverPlayNetworkHandler.player);
-                        connection.send(new PlayerDataPacket(uuid));
-                    }
-                } catch (IOException e) {
-                    ServersLink.LOGGER.error("Unable to send player data");
+                        try {
+                            connection.send(new PlayerDataPacket(uuid));
+                        } catch (IOException e) {
+                            ServersLink.LOGGER.error("Unable to send player data");
+                        }
+                    });
                 }
             }
         }

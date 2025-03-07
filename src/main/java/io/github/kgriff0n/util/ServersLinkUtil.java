@@ -5,6 +5,8 @@ import io.github.kgriff0n.Config;
 import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.mixin.PlayerManagerInvoker;
 import io.github.kgriff0n.packet.Packet;
+import io.github.kgriff0n.packet.info.ServersInfoPacket;
+import io.github.kgriff0n.packet.play.PlayerDisconnectPacket;
 import io.github.kgriff0n.packet.server.PlayerDataPacket;
 import io.github.kgriff0n.packet.play.PlayerTransferPacket;
 import io.github.kgriff0n.socket.H2SConnection;
@@ -92,6 +94,13 @@ public class ServersLinkUtil {
      * @param server the server to be disconnected
      */
     public static void disconnectServer(ServerInfo server) {
+        Hub hub = Hub.getInstance();
+        server.getPlayersList().forEach((uuid, name) -> {
+            hub.sendAll(new PlayerDisconnectPacket(uuid));
+            SERVER.getPlayerManager().getPlayerList().removeIf(player -> player.getUuid().equals(uuid));
+        });
+        hub.sendAll(new ServersInfoPacket(ServersLinkUtil.getServerList()));
+        server.getPlayersList().clear();
         serverList.put(server, null);
     }
 
@@ -208,22 +217,26 @@ public class ServersLinkUtil {
             /* add player to other server list and send packet */
             hub.sendTo(new PlayerTransferPacket(player.getUuid()), serverName);
             if (transferData) {
-                try {
-                    hub.sendTo(new PlayerDataPacket(player.getUuid(), serverName), serverName);
-                } catch (IOException e) {
-                    ServersLink.LOGGER.error("Unable to read player data");
-                }
+                SERVER.execute(() -> {
+                    try {
+                        hub.sendTo(new PlayerDataPacket(player.getUuid(), serverName), serverName);
+                    } catch (IOException e) {
+                        ServersLink.LOGGER.error("Unable to read player data");
+                    }
+                });
             }
         } else {
             /* send packet, add player to transferred list and transfer the player */
             SubServer connection = SubServer.getInstance();
             connection.send(new PlayerTransferPacket(player.getUuid(), serverName));
             if (transferData) {
-                try {
-                    connection.send(new PlayerDataPacket(player.getUuid(), serverName));
-                } catch (IOException e) {
-                    ServersLink.LOGGER.error("Unable to read player data");
-                }
+                    SERVER.execute(() -> {
+                    try {
+                        connection.send(new PlayerDataPacket(player.getUuid(), serverName));
+                    } catch (IOException e) {
+                        ServersLink.LOGGER.error("Unable to read player data");
+                    }
+                });
             }
         }
 

@@ -29,12 +29,15 @@ public class ServerStop implements ServerLifecycleEvents.ServerStopping {
             } else {
                 for (ServerPlayerEntity player : SERVER.getPlayerManager().getPlayerList()) {
                     if (!(player instanceof DummyPlayer)) {
-                        try {
-                            if (Config.syncPlayerData)
-                                SubServer.getInstance().send(new PlayerDataPacket(player.getUuid()));
-                        } catch (IOException e) {
-                            ServersLink.LOGGER.error("Unable to send player data for {}", player.getName());
-                        }
+                        SERVER.execute(() -> {
+                            try {
+                                if (Config.syncPlayerData) {
+                                    SubServer.getInstance().send(new PlayerDataPacket(player.getUuid()));
+                                }
+                            } catch (IOException e) {
+                                ServersLink.LOGGER.error("Unable to send player data for {}", player.getName());
+                            }
+                        });
                     }
                 }
                 SubServer.getInstance().send(new ServerStatusPacket(Config.serverName, 0.0f, true));

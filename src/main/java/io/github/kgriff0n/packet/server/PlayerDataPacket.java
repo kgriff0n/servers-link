@@ -42,13 +42,15 @@ public class PlayerDataPacket implements Packet {
     }
 
     private void writeData() {
-        try {
-            PlayerData.writeData(this.uuid, this.data);
-            PlayerData.writeAdvancements(this.uuid, this.advancements);
-            PlayerData.writeStats(this.uuid, this.stats);
-        } catch (IOException e) {
-            ServersLink.LOGGER.error("Unable to write player data");
-        }
+        SERVER.execute(() -> {
+            try {
+                PlayerData.writeData(this.uuid, this.data);
+                PlayerData.writeAdvancements(this.uuid, this.advancements);
+                PlayerData.writeStats(this.uuid, this.stats);
+            } catch (IOException e) {
+                ServersLink.LOGGER.error("Unable to write player data");
+            }
+        });
     }
 
     @Override
