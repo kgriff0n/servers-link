@@ -1,6 +1,7 @@
 package io.github.kgriff0n.packet.play;
 
 import io.github.kgriff0n.packet.Packet;
+import io.github.kgriff0n.server.Settings;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
@@ -15,12 +16,12 @@ public class SystemChatPacket implements Packet {
     }
 
     @Override
-    public boolean shouldTransfer() {
-        return true;
+    public boolean shouldTransfer(Settings settings) {
+        return settings.isChatSynced();
     }
 
     @Override
-    public void onReceive() {
+    public void onReceive(String sender) {
         /* Send message */
         for (ServerPlayerEntity player : SERVER.getPlayerManager().getPlayerList()) {
             player.sendMessage(Text.Serialization.fromJson(serializedMessage, SERVER.getRegistryManager()));

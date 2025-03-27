@@ -5,7 +5,8 @@ import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.PropertyMap;
 import io.github.kgriff0n.packet.Packet;
-import io.github.kgriff0n.util.ServersLinkUtil;
+import io.github.kgriff0n.api.ServersLinkApi;
+import io.github.kgriff0n.server.Settings;
 
 import java.util.UUID;
 
@@ -23,12 +24,12 @@ public class NewPlayerPacket implements Packet {
     }
 
     @Override
-    public boolean shouldTransfer() {
-        return true;
+    public boolean shouldTransfer(Settings settings) {
+        return settings.isPlayerListSynced();
     }
 
     @Override
-    public void onReceive() {
+    public void onReceive(String sender) {
         PropertyMap properties = new PropertyMap.Serializer().deserialize(JsonParser.parseString(this.properties), null, null);
         GameProfile profile = new GameProfile(this.uuid, this.name);
 
@@ -36,6 +37,6 @@ public class NewPlayerPacket implements Packet {
         PropertyMap gameProfileProperties = profile.getProperties();
         properties.forEach(gameProfileProperties::put);
 
-        ServersLinkUtil.addDummyPlayer(profile);
+        ServersLinkApi.addDummyPlayer(profile);
     }
 }

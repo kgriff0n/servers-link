@@ -7,7 +7,7 @@ import static io.github.kgriff0n.ServersLink.SERVER;
 
 public class ServerStopPacket implements Packet {
     @Override
-    public void onReceive() {
+    public void onReceive(String sender) {
         SERVER.stop(true);
         IS_RUNNING = false;
     }

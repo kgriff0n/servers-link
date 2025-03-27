@@ -1,11 +1,9 @@
 package io.github.kgriff0n.socket;
 
-import io.github.kgriff0n.Config;
 import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.packet.Packet;
 import io.github.kgriff0n.packet.info.NewServerPacket;
 import io.github.kgriff0n.packet.info.ServerStatusPacket;
-import io.github.kgriff0n.util.ServerInfo;
 
 import java.io.*;
 import java.net.Socket;
@@ -74,12 +72,11 @@ public class SubServer extends Thread {
     @Override
     public void run() {
         try {
-            ServerInfo server = new ServerInfo(Config.serverName, Config.serverIp, Config.serverPort);
-            send(new NewServerPacket(server));
-            send(new ServerStatusPacket(Config.serverName, 20.0f, false));
+            send(new NewServerPacket(ServersLink.getServerInfo()));
+            send(new ServerStatusPacket(ServersLink.getServerInfo().getName(), 20.0f, false));
             while (SERVER.isRunning()) {
                 try {
-                    ((Packet)in.readObject()).onReceive();
+                    ((Packet)in.readObject()).onReceive(null);
                 } catch (ClassNotFoundException e) {
                     ServersLink.LOGGER.error("Receive invalid data");
                 }

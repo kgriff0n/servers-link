@@ -1,9 +1,8 @@
 package io.github.kgriff0n.event;
 
-import io.github.kgriff0n.Config;
 import io.github.kgriff0n.socket.SubServer;
 import io.github.kgriff0n.ServersLink;
-import io.github.kgriff0n.socket.Hub;
+import io.github.kgriff0n.socket.Gateway;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.server.MinecraftServer;
 
@@ -20,12 +19,12 @@ public class ServerStart implements ServerLifecycleEvents.ServerStarted {
             /* Initialize SERVER */
             ServersLink.SERVER = minecraftServer;
 
-            if (Config.isHub) {
-                Hub hub = new Hub(Config.hubPort);
-                hub.setDaemon(true);
-                hub.start();
+            if (ServersLink.isGateway) {
+                Gateway gateway = new Gateway(ServersLink.getGatewayPort());
+                gateway.setDaemon(true);
+                gateway.start();
             } else {
-                SubServer connection = new SubServer(Config.hubIp, Config.hubPort);
+                SubServer connection = new SubServer(ServersLink.getGatewayIp(), ServersLink.getGatewayPort());
                 connection.setDaemon(true);
                 connection.start();
             }

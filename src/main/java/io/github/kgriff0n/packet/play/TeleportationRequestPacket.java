@@ -1,16 +1,13 @@
 package io.github.kgriff0n.packet.play;
 
-import io.github.kgriff0n.Config;
 import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.packet.Packet;
-import io.github.kgriff0n.socket.Hub;
+import io.github.kgriff0n.socket.Gateway;
 import io.github.kgriff0n.socket.SubServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.UUID;
-
-import static io.github.kgriff0n.Config.isHub;
 
 public class TeleportationRequestPacket implements Packet {
 
@@ -29,19 +26,19 @@ public class TeleportationRequestPacket implements Packet {
     }
 
     @Override
-    public void onReceive() {
+    public void onReceive(String sender) {
         ServerPlayerEntity player = ServersLink.SERVER.getPlayerManager().getPlayer(targetUuid);
         Vec3d pos = player != null ? player.getPos() : null;
 
-        if (isHub) {
-            if (this.destinationServer.equals(Config.serverName)) {
+        if (ServersLink.isGateway) {
+            if (this.destinationServer.equals(ServersLink.getServerInfo().getName())) {
                 /* Execute packet from hub */
                 if (pos != null) {
-                    Hub.getInstance().sendTo(new TeleportationAcceptPacket(pos.getX(), pos.getY(), pos.getZ(), this.senderUuid, this.originServer, this.destinationServer), this.originServer);
+                    Gateway.getInstance().sendTo(new TeleportationAcceptPacket(pos.getX(), pos.getY(), pos.getZ(), this.senderUuid, this.originServer, this.destinationServer), this.originServer);
                 }
             } else {
                 /* Redirect the packet to the other server */
-                Hub.getInstance().sendTo(this, this.destinationServer);
+                Gateway.getInstance().sendTo(this, this.destinationServer);
             }
         } else {
             /* Sub-server receive the packet */

@@ -1,14 +1,14 @@
 package io.github.kgriff0n.event;
 
-import io.github.kgriff0n.Config;
+import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.packet.info.NewPlayerPacket;
 import io.github.kgriff0n.packet.server.PlayerAcknowledgementPacket;
 import io.github.kgriff0n.packet.info.ServersInfoPacket;
-import io.github.kgriff0n.socket.Hub;
+import io.github.kgriff0n.socket.Gateway;
 import io.github.kgriff0n.socket.SubServer;
 import io.github.kgriff0n.util.IPlayerServersLink;
-import io.github.kgriff0n.util.ServerInfo;
-import io.github.kgriff0n.util.ServersLinkUtil;
+import io.github.kgriff0n.server.ServerInfo;
+import io.github.kgriff0n.api.ServersLinkApi;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.MinecraftServer;
@@ -18,7 +18,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Vec3d;
 
-import static io.github.kgriff0n.Config.isHub;
 import static io.github.kgriff0n.ServersLink.SERVER;
 
 public class PlayerJoin implements ServerPlayConnectionEvents.Join {
@@ -28,39 +27,39 @@ public class PlayerJoin implements ServerPlayConnectionEvents.Join {
 
         ServerPlayerEntity newPlayer = serverPlayNetworkHandler.player;
         /* Load player pos */
-        Vec3d pos = ((IPlayerServersLink) newPlayer).servers_link$getServerPos(Config.serverName);
+        Vec3d pos = ((IPlayerServersLink) newPlayer).servers_link$getServerPos(ServersLink.getServerInfo().getName());
         if (pos != null) newPlayer.setPosition(pos);
 
         /* Dummy player packet */
         NewPlayerPacket dummyPlayer = new NewPlayerPacket(newPlayer.getGameProfile());
 
         /* Players can only connect from the hub */
-        if (isHub) {
-            Hub hub = Hub.getInstance();
-            if (hub.isConnectedPlayer(newPlayer.getUuid()) && !ServersLinkUtil.getPreventConnect().contains(newPlayer.getUuid())) {
+        if (ServersLink.isGateway) {
+            Gateway gateway = Gateway.getInstance();
+            if (gateway.isConnectedPlayer(newPlayer.getUuid()) && !ServersLinkApi.getPreventConnect().contains(newPlayer.getUuid())) {
                 serverPlayNetworkHandler.disconnect(Text.translatable("multiplayer.status.cannot_connect").formatted(Formatting.RED));
-                ServersLinkUtil.getPreventConnect().add(newPlayer.getUuid());
-                ServersLinkUtil.getPreventDisconnect().add(newPlayer.getUuid());
+                ServersLinkApi.getPreventConnect().add(newPlayer.getUuid());
+                ServersLinkApi.getPreventDisconnect().add(newPlayer.getUuid());
             } else {
 
                 String lastServer = ((IPlayerServersLink) newPlayer).servers_link$getLastServer();
                 String nextServer = ((IPlayerServersLink) newPlayer).servers_link$getNextServer();
-                ServerInfo lastServerInfo = ServersLinkUtil.getServer(lastServer);
-                if (lastServer == null || lastServer.equals(Config.serverName) || nextServer.equals(Config.serverName)
-                        || lastServerInfo == null || lastServerInfo.isDown() || !Config.reconnectToLastServer) {
-                    ServersLinkUtil.getServer(Config.serverName).addPlayer(newPlayer.getUuid(), newPlayer.getName().getString());
+                ServerInfo lastServerInfo = ServersLinkApi.getServer(lastServer);
+                if (lastServer == null || lastServer.equals(ServersLink.getServerInfo().getName()) || nextServer.equals(ServersLink.getServerInfo().getName())
+                        || lastServerInfo == null || lastServerInfo.isDown() || !gateway.isReconnectToLastServer()) {
+                    ServersLinkApi.getServer(ServersLink.getServerInfo().getName()).addPlayer(newPlayer.getGameProfile());
                     /* Delete the fake player */
                     SERVER.getPlayerManager().getPlayerList().removeIf(player -> player.getName().equals(newPlayer.getName()));
 
                     /* Send player information to other servers */
-                    if (Config.syncPlayerList) hub.sendAll(dummyPlayer);
-                    hub.sendAll(new ServersInfoPacket(ServersLinkUtil.getServerList()));
+                    gateway.forward(dummyPlayer, ServersLink.getServerInfo().getName());
+                    gateway.sendAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
 
-                    if (Config.reconnectToLastServer && lastServer != null && !lastServer.isEmpty() && (lastServerInfo == null || lastServerInfo.isDown())) {
+                    if (gateway.isReconnectToLastServer() && lastServer != null && !lastServer.isEmpty() && (lastServerInfo == null || lastServerInfo.isDown())) {
                         newPlayer.sendMessage(Text.literal("An unexpected error occurred while attempting to reconnect you to your previous server").formatted(Formatting.RED));
                     }
                 } else {
-                    ServersLinkUtil.transferPlayer(newPlayer, lastServer, false);
+                    ServersLinkApi.transferPlayer(newPlayer, lastServer);
                 }
             }
         } else {
@@ -68,16 +67,16 @@ public class PlayerJoin implements ServerPlayConnectionEvents.Join {
             if (!connection.getWaitingPlayers().contains(newPlayer.getUuid())) {
                 serverPlayNetworkHandler.disconnect(Text.translatable("multiplayer.status.cannot_connect").formatted(Formatting.RED));
                 /* Used to prevent the logout message in ServerPlayNetworkHandlerMixin#preventDisconnectMessage */
-                ServersLinkUtil.getPreventConnect().add(serverPlayNetworkHandler.player.getUuid());
-                ServersLinkUtil.getPreventDisconnect().add(serverPlayNetworkHandler.player.getUuid());
+                ServersLinkApi.getPreventConnect().add(serverPlayNetworkHandler.player.getUuid());
+                ServersLinkApi.getPreventDisconnect().add(serverPlayNetworkHandler.player.getUuid());
             } else {
                 /* The player logs in and is removed from the list of waiting players */
                 connection.removeWaitingPlayer(newPlayer.getUuid());
                 /* Delete the fake player */
                 SERVER.getPlayerManager().getPlayerList().removeIf(player -> player.getName().equals(newPlayer.getName()));
                 /* Send player information to other servers */
-                if (Config.syncPlayerList) connection.send(dummyPlayer);
-                connection.send(new PlayerAcknowledgementPacket(Config.serverName, newPlayer.getUuid(), newPlayer.getName().getString()));
+                connection.send(dummyPlayer);
+                connection.send(new PlayerAcknowledgementPacket(ServersLink.getServerInfo().getName(), newPlayer.getGameProfile()));
             }
         }
 

@@ -1,17 +1,14 @@
 package io.github.kgriff0n.packet.play;
 
-import io.github.kgriff0n.Config;
 import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.packet.Packet;
-import io.github.kgriff0n.socket.Hub;
+import io.github.kgriff0n.socket.Gateway;
 import io.github.kgriff0n.util.IPlayerServersLink;
-import io.github.kgriff0n.util.ServersLinkUtil;
+import io.github.kgriff0n.api.ServersLinkApi;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.UUID;
-
-import static io.github.kgriff0n.Config.isHub;
 
 public class TeleportationAcceptPacket implements Packet {
 
@@ -34,26 +31,26 @@ public class TeleportationAcceptPacket implements Packet {
     }
 
     @Override
-    public void onReceive() {
+    public void onReceive(String sender) {
         ServerPlayerEntity player = ServersLink.SERVER.getPlayerManager().getPlayer(senderUuid);
-        if (isHub) {
-            if (this.originServer.equals(Config.serverName)) {
+        if (ServersLink.isGateway) {
+            if (this.originServer.equals(ServersLink.getServerInfo().getName())) {
                 /* Execute packet from hub */
                 if (player != null) {
-                    ((IPlayerServersLink) player).servers_link$setLastServer(Config.serverName);
+                    ((IPlayerServersLink) player).servers_link$setLastServer(ServersLink.getServerInfo().getName());
                     ((IPlayerServersLink) player).servers_link$setServerPos(this.destinationServer, new Vec3d(targetX, targetY, targetZ));
-                    ServersLinkUtil.transferPlayer(player, this.destinationServer, Config.syncPlayerData);
+                    ServersLinkApi.transferPlayer(player, this.destinationServer);
                 }
             } else {
                 /* Redirect the packet to the other server */
-                Hub.getInstance().sendTo(this, this.destinationServer);
+                Gateway.getInstance().sendTo(this, this.destinationServer);
             }
         } else {
             /* Sub-server receive the packet */
             if (player != null) {
-                ((IPlayerServersLink) player).servers_link$setLastServer(Config.serverName);
+                ((IPlayerServersLink) player).servers_link$setLastServer(ServersLink.getServerInfo().getName());
                 ((IPlayerServersLink) player).servers_link$setServerPos(this.destinationServer, new Vec3d(targetX, targetY, targetZ));
-                ServersLinkUtil.transferPlayer(player, this.destinationServer, Config.syncPlayerData);
+                ServersLinkApi.transferPlayer(player, this.destinationServer);
             }
         }
     }

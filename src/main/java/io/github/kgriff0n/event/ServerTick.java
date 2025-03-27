@@ -1,11 +1,11 @@
 package io.github.kgriff0n.event;
 
-import io.github.kgriff0n.Config;
+import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.packet.info.ServerStatusPacket;
 import io.github.kgriff0n.packet.info.ServersInfoPacket;
-import io.github.kgriff0n.socket.Hub;
+import io.github.kgriff0n.socket.Gateway;
 import io.github.kgriff0n.socket.SubServer;
-import io.github.kgriff0n.util.ServersLinkUtil;
+import io.github.kgriff0n.api.ServersLinkApi;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 
@@ -20,11 +20,11 @@ public class ServerTick implements ServerTickEvents.StartTick {
             count = 0;
             float tps = minecraftServer.getTickManager().getTickRate();
             /* update self */
-            ServersLinkUtil.getServer(Config.serverName).setTps(tps);
-            if (Config.isHub) {
-                Hub.getInstance().sendAll(new ServersInfoPacket(ServersLinkUtil.getServerList()));
+            ServersLinkApi.getServer(ServersLink.getServerInfo().getName()).setTps(tps);
+            if (ServersLink.isGateway) {
+                Gateway.getInstance().sendAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
             } else {
-                SubServer.getInstance().send(new ServerStatusPacket(Config.serverName, tps, false));
+                SubServer.getInstance().send(new ServerStatusPacket(ServersLink.getServerInfo().getName(), tps, false));
             }
         }
     }

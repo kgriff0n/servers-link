@@ -1,7 +1,7 @@
 package io.github.kgriff0n.packet.info;
 
 import io.github.kgriff0n.packet.Packet;
-import io.github.kgriff0n.util.ServersLinkUtil;
+import io.github.kgriff0n.api.ServersLinkApi;
 
 public class ServerStatusPacket implements Packet {
 
@@ -16,8 +16,8 @@ public class ServerStatusPacket implements Packet {
     }
 
     @Override
-    public void onReceive() {
-        ServersLinkUtil.getServer(serverName).setTps(tps);
-        ServersLinkUtil.getServer(serverName).setDown(down);
+    public void onReceive(String sender) {
+        ServersLinkApi.getServer(serverName).setTps(tps);
+        ServersLinkApi.getServer(serverName).setDown(down);
     }
 }

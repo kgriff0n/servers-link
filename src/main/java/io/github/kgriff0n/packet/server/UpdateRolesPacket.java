@@ -26,7 +26,7 @@ public class UpdateRolesPacket implements Packet {
     }
 
     @Override
-    public void onReceive() {
+    public void onReceive(String sender) {
         try {
             writeOps();
             if (FabricLoader.getInstance().isModLoaded("player-roles")) {

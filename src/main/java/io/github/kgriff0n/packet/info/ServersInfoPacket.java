@@ -1,8 +1,8 @@
 package io.github.kgriff0n.packet.info;
 
 import io.github.kgriff0n.packet.Packet;
-import io.github.kgriff0n.util.ServerInfo;
-import io.github.kgriff0n.util.ServersLinkUtil;
+import io.github.kgriff0n.server.ServerInfo;
+import io.github.kgriff0n.api.ServersLinkApi;
 
 import java.util.ArrayList;
 
@@ -19,7 +19,7 @@ public class ServersInfoPacket implements Packet {
     }
 
     @Override
-    public void onReceive() {
-        ServersLinkUtil.setServerList(servers);
+    public void onReceive(String sender) {
+        ServersLinkApi.setServerList(servers);
     }
 }

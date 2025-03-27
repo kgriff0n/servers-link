@@ -1,17 +1,17 @@
 package io.github.kgriff0n.packet.server;
 
-import io.github.kgriff0n.Config;
 import io.github.kgriff0n.ServersLink;
+import io.github.kgriff0n.api.ServersLinkApi;
 import io.github.kgriff0n.mixin.PlayerManagerAccessor;
 import io.github.kgriff0n.packet.Packet;
-import io.github.kgriff0n.socket.Hub;
+import io.github.kgriff0n.server.Settings;
+import io.github.kgriff0n.socket.Gateway;
 import io.github.kgriff0n.util.PlayerData;
 import net.minecraft.server.PlayerManager;
 
 import java.io.IOException;
 import java.util.UUID;
 
-import static io.github.kgriff0n.Config.isHub;
 import static io.github.kgriff0n.ServersLink.SERVER;
 
 public class PlayerDataPacket implements Packet {
@@ -54,18 +54,25 @@ public class PlayerDataPacket implements Packet {
     }
 
     @Override
-    public void onReceive() {
+    public void onReceive(String sender) {
         /* Remove player data to reload them from file */
         PlayerManager playerManager = SERVER.getPlayerManager();
         ((PlayerManagerAccessor) playerManager).getAdvancementTrackers().remove(this.uuid);
         ((PlayerManagerAccessor) playerManager).getStatisticsMap().remove(this.uuid);
 
-        writeData();
-
-        if (isHub) {
-            if (this.serverToTransfer != null && !this.serverToTransfer.equals(Config.serverName)) { // Redirect the packet to the other server
-                Hub.getInstance().sendTo(this, this.serverToTransfer);
+        if (ServersLink.isGateway) {
+            Settings settings = Gateway.getInstance().getSettings(ServersLinkApi.getServer(sender).getGroupId(), ServersLinkApi.getServer(serverToTransfer).getGroupId());
+            if (this.serverToTransfer != null && !this.serverToTransfer.equals(ServersLink.getServerInfo().getName())) { // Redirect the packet to the other server
+                if (settings.isPlayerDataSynced()) {
+                    Gateway.getInstance().sendTo(this, this.serverToTransfer);
+                }
+            } else if (this.serverToTransfer.equals(ServersLink.getServerInfo().getName())) {
+                if (settings.isPlayerDataSynced()) {
+                    writeData();
+                }
             }
+        } else {
+            writeData();
         }
 
     }

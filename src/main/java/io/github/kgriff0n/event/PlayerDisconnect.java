@@ -1,15 +1,14 @@
 package io.github.kgriff0n.event;
 
-import io.github.kgriff0n.Config;
 import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.mixin.PlayerManagerInvoker;
 import io.github.kgriff0n.packet.server.PlayerDataPacket;
 import io.github.kgriff0n.packet.play.PlayerDisconnectPacket;
 import io.github.kgriff0n.packet.info.ServersInfoPacket;
-import io.github.kgriff0n.socket.Hub;
+import io.github.kgriff0n.socket.Gateway;
 import io.github.kgriff0n.socket.SubServer;
 import io.github.kgriff0n.util.IPlayerServersLink;
-import io.github.kgriff0n.util.ServersLinkUtil;
+import io.github.kgriff0n.api.ServersLinkApi;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
@@ -28,33 +27,31 @@ public class PlayerDisconnect implements ServerPlayConnectionEvents.Disconnect {
         PlayerDisconnectPacket packet = new PlayerDisconnectPacket(uuid);
 
         /* Set player pos & last server */
-        ((IPlayerServersLink) player).servers_link$setLastServer(Config.serverName);
-        ((IPlayerServersLink) player).servers_link$setServerPos(Config.serverName, player.getPos());
+        ((IPlayerServersLink) player).servers_link$setLastServer(ServersLink.getServerInfo().getName());
+        ((IPlayerServersLink) player).servers_link$setServerPos(ServersLink.getServerInfo().getName(), player.getPos());
 
-        if (Config.isHub) {
-            Hub hub = Hub.getInstance();
+        if (ServersLink.isGateway) {
+            Gateway gateway = Gateway.getInstance();
             /* Delete player from list and send packet ONLY if the player is not transferred */
-            if (!ServersLinkUtil.getPreventDisconnect().contains(uuid)) {
-                ServersLinkUtil.getServer(Config.serverName).removePlayer(uuid);
-                hub.sendAll(packet);
-                hub.sendAll(new ServersInfoPacket(ServersLinkUtil.getServerList()));
+            if (!ServersLinkApi.getPreventDisconnect().contains(uuid)) {
+                ServersLinkApi.getServer(ServersLink.getServerInfo().getName()).removePlayer(uuid);
+                gateway.sendAll(packet);
+                gateway.sendAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
             }
         } else {
             SubServer connection = SubServer.getInstance();
             /* Send packet ONLY if the player is not transferred */
-            if (!ServersLinkUtil.getPreventDisconnect().contains(uuid)) {
+            if (!ServersLinkApi.getPreventDisconnect().contains(uuid)) {
                 connection.send(packet);
                 /* Force inventory saving */
-                if (Config.syncPlayerData) {
-                    SERVER.execute(() -> {
-                        ((PlayerManagerInvoker) SERVER.getPlayerManager()).servers_link$savePlayerData(serverPlayNetworkHandler.player);
-                        try {
-                            connection.send(new PlayerDataPacket(uuid));
-                        } catch (IOException e) {
-                            ServersLink.LOGGER.error("Unable to send player data");
-                        }
-                    });
-                }
+                SERVER.execute(() -> {
+                    ((PlayerManagerInvoker) SERVER.getPlayerManager()).servers_link$savePlayerData(serverPlayNetworkHandler.player);
+                    try {
+                        connection.send(new PlayerDataPacket(uuid));
+                    } catch (IOException e) {
+                        ServersLink.LOGGER.error("Unable to send player data");
+                    }
+                });
             }
         }
     }

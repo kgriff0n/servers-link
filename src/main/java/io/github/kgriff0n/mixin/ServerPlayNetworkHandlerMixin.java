@@ -1,8 +1,8 @@
 package io.github.kgriff0n.mixin;
 
-import io.github.kgriff0n.Config;
+import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.packet.play.PlayerChatPacket;
-import io.github.kgriff0n.util.ServersLinkUtil;
+import io.github.kgriff0n.api.ServersLinkApi;
 import net.minecraft.network.message.MessageType;
 import net.minecraft.network.message.SignedMessage;
 import net.minecraft.server.PlayerManager;
@@ -27,17 +27,15 @@ public abstract class ServerPlayNetworkHandlerMixin {
 
     @Inject(at = @At("HEAD"), method = "sendChatMessage")
     private void sendChatMessage(SignedMessage message, MessageType.Parameters params, CallbackInfo ci) {
-        if (Config.syncChat) {
-            Text formattedMessage = params.applyChatDecoration(message.getContent());
-            PlayerChatPacket packet = new PlayerChatPacket(Text.Serialization.toJsonString(formattedMessage, SERVER.getRegistryManager()), this.getPlayer().getName().getString());
-            ServersLinkUtil.send(packet);
-        }
+        Text formattedMessage = params.applyChatDecoration(message.getContent());
+        PlayerChatPacket packet = new PlayerChatPacket(Text.Serialization.toJsonString(formattedMessage, SERVER.getRegistryManager()), this.getPlayer().getName().getString());
+        ServersLinkApi.send(packet, ServersLink.getServerInfo().getName());
     }
 
     @Redirect(method = "cleanUp", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;broadcast(Lnet/minecraft/text/Text;Z)V"))
     private void preventDisconnectMessage(PlayerManager instance, Text message, boolean overlay) {
-        if (ServersLinkUtil.getPreventDisconnect().contains(player.getUuid())) {
-            ServersLinkUtil.getPreventDisconnect().remove(player.getUuid());
+        if (ServersLinkApi.getPreventDisconnect().contains(player.getUuid())) {
+            ServersLinkApi.getPreventDisconnect().remove(player.getUuid());
         } else {
             getPlayer().getServer().getPlayerManager().broadcast(message, overlay);
         }

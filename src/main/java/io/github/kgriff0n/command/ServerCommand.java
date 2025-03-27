@@ -2,14 +2,14 @@ package io.github.kgriff0n.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import io.github.kgriff0n.Config;
+import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.packet.play.TeleportationAcceptPacket;
 import io.github.kgriff0n.packet.play.TeleportationRequestPacket;
-import io.github.kgriff0n.socket.Hub;
+import io.github.kgriff0n.socket.Gateway;
 import io.github.kgriff0n.socket.SubServer;
 import io.github.kgriff0n.util.IPlayerServersLink;
-import io.github.kgriff0n.util.ServersLinkUtil;
-import io.github.kgriff0n.util.ServerInfo;
+import io.github.kgriff0n.api.ServersLinkApi;
+import io.github.kgriff0n.server.ServerInfo;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.argument.EntityArgumentType;
@@ -40,7 +40,7 @@ public class ServerCommand {
                         .requires(Permissions.require("server.join", 2))
                         .then(argument("server", StringArgumentType.string())
                                 .suggests((context, builder) -> {
-                                    for (String serverName : ServersLinkUtil.getServerNames()) {
+                                    for (String serverName : ServersLinkApi.getServerNames()) {
                                         builder.suggest(serverName);
                                     }
                                     return builder.buildFuture();
@@ -85,7 +85,7 @@ public class ServerCommand {
         ServerPlayerEntity player = source.getPlayer();
         player.sendMessage(Text.literal("Server List").formatted(Formatting.BOLD, Formatting.DARK_GRAY));
 
-        for (ServerInfo server : ServersLinkUtil.getServerList()) {
+        for (ServerInfo server : ServersLinkApi.getServerList()) {
             MutableText status = Text.literal("●");
             if (server.isDown()) {
                 status.formatted(Formatting.RED);
@@ -118,15 +118,16 @@ public class ServerCommand {
     private static int join(ServerPlayerEntity player, String serverName) {
         if (player != null) {
             /* Save player pos */
-            ((IPlayerServersLink) player).servers_link$setLastServer(Config.serverName);
-            ((IPlayerServersLink) player).servers_link$setServerPos(Config.serverName, player.getPos());
+            String name = ServersLink.getServerInfo().getName();
+            ((IPlayerServersLink) player).servers_link$setLastServer(name);
+            ((IPlayerServersLink) player).servers_link$setServerPos(name, player.getPos());
 
-            if (Config.serverName.equals(serverName)) {
+            if (name.equals(serverName)) {
                 player.sendMessage(Text.literal("You are already connected to this server").formatted(Formatting.RED));
-            } else if (ServersLinkUtil.getServer(serverName) == null) {
+            } else if (ServersLinkApi.getServer(serverName) == null) {
                 player.sendMessage(Text.literal("This server does not exist").formatted(Formatting.RED));
             } else {
-                ServersLinkUtil.transferPlayer(player, serverName, Config.syncPlayerData);
+                ServersLinkApi.transferPlayer(player, serverName);
             }
         }
         return Command.SINGLE_SUCCESS;
@@ -139,20 +140,20 @@ public class ServerCommand {
 
     private static int whereis(ServerCommandSource source, ServerPlayerEntity player) {
         ServerPlayerEntity sender = source.getPlayer();
-        sender.sendMessage(Text.literal(player.getName().getString() + " is on " + ServersLinkUtil.whereIs(player.getUuid())));
+        sender.sendMessage(Text.literal(player.getName().getString() + " is on " + ServersLinkApi.whereIs(player.getUuid())));
         return Command.SINGLE_SUCCESS;
     }
 
     private static int teleportTo(ServerCommandSource source, ServerPlayerEntity player) {
         ServerPlayerEntity sender = source.getPlayer();
-        String server = ServersLinkUtil.whereIs(player.getUuid());
+        String server = ServersLinkApi.whereIs(player.getUuid());
         if (sender == null) return 0;
-        if (server.equals(Config.serverName)) {
+        if (server.equals(ServersLink.getServerInfo().getName())) {
             sender.teleport(player.getServerWorld(), player.getX(), player.getY(), player.getZ(), EnumSet.noneOf(PositionFlag.class), player.getYaw(), player.getPitch(), false);
         } else {
-            TeleportationRequestPacket request = new TeleportationRequestPacket(player.getUuid(), sender.getUuid(), Config.serverName, server);
-            if (Config.isHub) {
-                Hub.getInstance().sendTo(request, server);
+            TeleportationRequestPacket request = new TeleportationRequestPacket(player.getUuid(), sender.getUuid(), ServersLink.getServerInfo().getName(), server);
+            if (ServersLink.isGateway) {
+                Gateway.getInstance().sendTo(request, server);
             } else {
                 SubServer.getInstance().send(request);
             }
@@ -162,14 +163,14 @@ public class ServerCommand {
 
     private static int teleportHere(ServerCommandSource source, ServerPlayerEntity player) {
         ServerPlayerEntity sender = source.getPlayer();
-        String server = ServersLinkUtil.whereIs(player.getUuid());
+        String server = ServersLinkApi.whereIs(player.getUuid());
         if (sender == null) return 0;
-        if (server.equals(Config.serverName)) {
+        if (server.equals(ServersLink.getServerInfo().getName())) {
             player.teleport(sender.getServerWorld(), sender.getX(), sender.getY(), sender.getZ(), EnumSet.noneOf(PositionFlag.class), sender.getYaw(), sender.getPitch(), false);
         } else {
-            TeleportationAcceptPacket accept = new TeleportationAcceptPacket(sender.getX(), sender.getY(), sender.getZ(), player.getUuid(), server, Config.serverName);
-            if (Config.isHub) {
-                Hub.getInstance().sendTo(accept, server);
+            TeleportationAcceptPacket accept = new TeleportationAcceptPacket(sender.getX(), sender.getY(), sender.getZ(), player.getUuid(), server, ServersLink.getServerInfo().getName());
+            if (ServersLink.isGateway) {
+                Gateway.getInstance().sendTo(accept, server);
             } else {
                 SubServer.getInstance().send(accept);
             }

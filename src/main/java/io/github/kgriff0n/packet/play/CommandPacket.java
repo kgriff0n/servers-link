@@ -1,7 +1,9 @@
 package io.github.kgriff0n.packet.play;
 
 import io.github.kgriff0n.packet.Packet;
-import io.github.kgriff0n.util.ServersLinkUtil;
+import io.github.kgriff0n.api.ServersLinkApi;
+import io.github.kgriff0n.server.Settings;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -24,14 +26,19 @@ public class CommandPacket implements Packet {
     }
 
     @Override
-    public boolean shouldTransfer() {
-        return true;
+    public boolean shouldTransfer(Settings settings) {
+        return command.startsWith("server run ")
+                || settings.isWhitelistSynced() && command.startsWith("whitelist")
+                || settings.isRolesSynced() &&
+                    (command.startsWith("op") || command.startsWith("deop")
+                    || (FabricLoader.getInstance().isModLoaded("player-roles")
+                        && command.startsWith("role")));
     }
 
     @Override
-    public void onReceive() {
+    public void onReceive(String sender) {
         if (uuid != null) {
-            ServerPlayerEntity player = ServersLinkUtil.getDummyPlayer(uuid);
+            ServerPlayerEntity player = ServersLinkApi.getDummyPlayer(uuid);
             if (player != null) {
                 ServerCommandSource source = new ServerCommandSource(
                         player.getCommandOutput(),

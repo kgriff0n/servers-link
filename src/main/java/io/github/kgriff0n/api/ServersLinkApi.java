@@ -1,7 +1,6 @@
-package io.github.kgriff0n.util;
+package io.github.kgriff0n.api;
 
 import com.mojang.authlib.GameProfile;
-import io.github.kgriff0n.Config;
 import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.mixin.PlayerManagerInvoker;
 import io.github.kgriff0n.packet.Packet;
@@ -9,9 +8,13 @@ import io.github.kgriff0n.packet.info.ServersInfoPacket;
 import io.github.kgriff0n.packet.play.PlayerDisconnectPacket;
 import io.github.kgriff0n.packet.server.PlayerDataPacket;
 import io.github.kgriff0n.packet.play.PlayerTransferPacket;
-import io.github.kgriff0n.socket.H2SConnection;
-import io.github.kgriff0n.socket.Hub;
+import io.github.kgriff0n.server.Settings;
+import io.github.kgriff0n.socket.Gateway;
+import io.github.kgriff0n.socket.G2SConnection;
 import io.github.kgriff0n.socket.SubServer;
+import io.github.kgriff0n.util.DummyPlayer;
+import io.github.kgriff0n.util.IPlayerServersLink;
+import io.github.kgriff0n.server.ServerInfo;
 import net.minecraft.network.packet.s2c.common.ServerTransferS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -21,12 +24,11 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.util.*;
 
-import static io.github.kgriff0n.Config.isHub;
 import static io.github.kgriff0n.ServersLink.SERVER;
 
-public class ServersLinkUtil {
+public class ServersLinkApi {
 
-    private static final HashMap<ServerInfo, H2SConnection> serverList = new HashMap<>();
+    private static final HashMap<ServerInfo, G2SConnection> serverList = new HashMap<>();
 
     private static final HashSet<UUID> preventConnect = new HashSet<>();
     private static final HashSet<UUID> preventDisconnect = new HashSet<>();
@@ -39,7 +41,7 @@ public class ServersLinkUtil {
         return preventDisconnect;
     }
 
-    public static HashMap<ServerInfo, H2SConnection> getServerMap() {
+    public static HashMap<ServerInfo, G2SConnection> getServerMap() {
         return serverList;
     }
 
@@ -84,7 +86,7 @@ public class ServersLinkUtil {
      * @param server a new server
      * @param connection used from the hub for packet transfer
      */
-    public static void addServer(ServerInfo server, @Nullable H2SConnection connection) {
+    public static void addServer(ServerInfo server, @Nullable G2SConnection connection) {
         serverList.put(server, connection);
     }
 
@@ -94,12 +96,12 @@ public class ServersLinkUtil {
      * @param server the server to be disconnected
      */
     public static void disconnectServer(ServerInfo server) {
-        Hub hub = Hub.getInstance();
+        Gateway gateway = Gateway.getInstance();
         server.getPlayersList().forEach((uuid, name) -> {
-            hub.sendAll(new PlayerDisconnectPacket(uuid));
+            gateway.sendAll(new PlayerDisconnectPacket(uuid));
             SERVER.getPlayerManager().getPlayerList().removeIf(player -> player.getUuid().equals(uuid));
         });
-        hub.sendAll(new ServersInfoPacket(ServersLinkUtil.getServerList()));
+        gateway.sendAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
         server.getPlayersList().clear();
         serverList.put(server, null);
     }
@@ -110,7 +112,7 @@ public class ServersLinkUtil {
      */
     public static int getRunningSubServers() {
         int count = 0;
-        for (H2SConnection connection : serverList.values()) {
+        for (G2SConnection connection : serverList.values()) {
             if (connection != null) count++;
         }
         return count;
@@ -122,7 +124,7 @@ public class ServersLinkUtil {
      * @return the name of the server
      */
     public static String whereIs(UUID uuid) {
-        for (ServerInfo serverInfo : ServersLinkUtil.getServerList()) {
+        for (ServerInfo serverInfo : ServersLinkApi.getServerList()) {
             if (serverInfo.getPlayersList().containsKey(uuid)) {
                 return serverInfo.getName();
             }
@@ -135,9 +137,9 @@ public class ServersLinkUtil {
      * sent to all other sub-servers, otherwise it is sent to the hub.
      * @param packet the packet to send
      */
-    public static void send(Packet packet) {
-        if (isHub) {
-            Hub.getInstance().sendAll(packet);
+    public static void send(Packet packet, String source) {
+        if (ServersLink.isGateway) {
+            Gateway.getInstance().forward(packet, source);
         } else {
             SubServer.getInstance().send(packet);
         }
@@ -199,27 +201,27 @@ public class ServersLinkUtil {
      * Transfers a player to another server.
      * @param player the player to transfer
      * @param serverName the name of the server to which the player will be transferred
-     * @param transferData whether the player's data should also be transferred
      */
-    public static void transferPlayer(ServerPlayerEntity player, String serverName, boolean transferData) {
+    public static void transferPlayer(ServerPlayerEntity player, String serverName) {
 
         ((IPlayerServersLink) player).servers_link$setNextServer(serverName);
         /* Force inventory saving */
-        if (transferData) ((PlayerManagerInvoker)SERVER.getPlayerManager()).servers_link$savePlayerData(player);
+        ((PlayerManagerInvoker)SERVER.getPlayerManager()).servers_link$savePlayerData(player);
 
-        ServerInfo server = ServersLinkUtil.getServer(serverName);
+        ServerInfo server = ServersLinkApi.getServer(serverName);
 
-        if (isHub) {
-            Hub hub = Hub.getInstance();
+        if (ServersLink.isGateway) {
+            Gateway gateway = Gateway.getInstance();
             /* remove player from list */
-            ServersLinkUtil.getServer(Config.serverName).removePlayer(player.getUuid());
+            ServersLinkApi.getServer(ServersLink.getServerInfo().getName()).removePlayer(player.getUuid());
 
             /* add player to other server list and send packet */
-            hub.sendTo(new PlayerTransferPacket(player.getUuid()), serverName);
-            if (transferData) {
+            gateway.sendTo(new PlayerTransferPacket(player.getUuid()), serverName);
+            Settings settings = Gateway.getInstance().getSettings(ServersLinkApi.getServer(ServersLink.getServerInfo().getName()).getGroupId(), ServersLinkApi.getServer(serverName).getGroupId());
+            if (settings.isPlayerDataSynced()) {
                 SERVER.execute(() -> {
                     try {
-                        hub.sendTo(new PlayerDataPacket(player.getUuid(), serverName), serverName);
+                        gateway.sendTo(new PlayerDataPacket(player.getUuid(), serverName), serverName);
                     } catch (IOException e) {
                         ServersLink.LOGGER.error("Unable to read player data");
                     }
@@ -229,19 +231,17 @@ public class ServersLinkUtil {
             /* send packet, add player to transferred list and transfer the player */
             SubServer connection = SubServer.getInstance();
             connection.send(new PlayerTransferPacket(player.getUuid(), serverName));
-            if (transferData) {
-                    SERVER.execute(() -> {
-                    try {
-                        connection.send(new PlayerDataPacket(player.getUuid(), serverName));
-                    } catch (IOException e) {
-                        ServersLink.LOGGER.error("Unable to read player data");
-                    }
-                });
-            }
+            SERVER.execute(() -> {
+                try {
+                    connection.send(new PlayerDataPacket(player.getUuid(), serverName));
+                } catch (IOException e) {
+                    ServersLink.LOGGER.error("Unable to read player data");
+                }
+            });
         }
 
         /* prevent disconnect message */
-        ServersLinkUtil.getPreventDisconnect().add(player.getUuid());
+        ServersLinkApi.getPreventDisconnect().add(player.getUuid());
         player.networkHandler.sendPacket(new ServerTransferS2CPacket(server.getIp(), server.getPort()));
         if (!player.isDisconnected()) {
             player.networkHandler.disconnect(Text.translatable("connect.transferring"));

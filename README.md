@@ -32,9 +32,9 @@ Next, you have to configure `servers-link.properties`. This file contains the fo
 
 | Option                | Description                                                                                                                                                               |    Value     |
 |-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------:|
-| hub                   | If the server is the hub or not. Only one of your servers can be the hub.<br/>This is the server the players will use to connect.                                         | True / False |
-| hub-ip                | This is not the IP used by players to connect, but the IP used to communicate between the servers.<br/>If all your servers are in local you can set this to  `127.0.0.1`. |  IP Address  |
-| hub-port              | Same as above. If you want to connect servers located in another network, you must allow connections to this port.                                                        |     Port     |
+| gateway                   | If the server is the gateway or not. Only one of your servers can be the gateway.<br/>This is the server the players will use to connect.                                         | True / False |
+| gateway-ip                | This is not the IP used by players to connect, but the IP used to communicate between the servers.<br/>If all your servers are in local you can set this to  `127.0.0.1`. |  IP Address  |
+| gateway-port              | Same as above. If you want to connect servers located in another network, you must allow connections to this port.                                                        |     Port     |
 | reconnect-last-server | Indicates whether players should be reconnected to the last server from which they disconnected.                                                                          | True / False |
 | server-ip             | IP of the Minecraft server.                                                                                                                                               |  IP Address  |
 | server-name           | Name of the server (multiple servers can't have the same name).                                                                                                           |    String    |
@@ -44,18 +44,18 @@ Next, you have to configure `servers-link.properties`. This file contains the fo
 | sync-player-list      | If player list is synchronized between servers.                                                                                                                           | True / False |
 | sync-roles            | If roles are synchronized between servers (support Player Roles).                                                                                                         | True / False |
 | sync-whitelist        | If whitelist is synchronized between servers.                                                                                                                             | True / False |
-| whitelist-ip          | Set to true if you don't want all IPs to be able to connect to the hub.                                                                                                   | True / False |
+| whitelist-ip          | Set to true if you don't want all IPs to be able to connect to the gateway.                                                                                                   | True / False |
 | whitelisted-ip        | A list of allowed IPs (eg: "192.168.0.1,192.168.0.2").                                                                                                                    | List of IPs  |
 
 > [!WARNING]
 > If you want sync-chat to be true, you must also have sync-player-list set to true.
 
 > [!CAUTION]
-> If `whitelist-ip` is set to `false` and the **hub's port is open**, anyone can install this mod and connect their server to your hub.
+> If `whitelist-ip` is set to `false` and the **gateway's port is open**, anyone can install this mod and connect their server to your gateway.
 
 > [!IMPORTANT]
 > All ports specified in `server-port` must remain open.  
-> When you stop the hub server, all other servers are stopped.
+> When you stop the gateway server, all other servers are stopped.
 
 ### Example
 ```mermaid
@@ -73,17 +73,17 @@ graph TD;
     A<-->C;
 ```
 
-For this example, all the servers are in local, and we want to use `59001` as the hub port.
+For this example, all the servers are in local, and we want to use `59001` as the gateway port.
 
 #### Hub
 
 ```properties
-hub=true
-hub-ip=127.0.0.1
-hub-port=59001
+gateway=true
+gateway-ip=127.0.0.1
+gateway-port=59001
 reconnect-last-server=true
 server-ip=192.168.0.1
-server-name=hub
+server-name=gateway
 server-port=25565
 sync-chat=true
 sync-player-data=true
@@ -97,9 +97,9 @@ whitelisted-ip=
 #### Server 1
 
 ```properties
-hub=false
-hub-ip=127.0.0.1
-hub-port=59001
+gateway=false
+gateway-ip=127.0.0.1
+gateway-port=59001
 reconnect-last-server=true
 server-ip=192.168.0.1
 server-name=server-1
@@ -116,9 +116,9 @@ whitelisted-ip=
 #### Server 2
 
 ```properties
-hub=false
-hub-ip=127.0.0.1
-hub-port=59001
+gateway=false
+gateway-ip=127.0.0.1
+gateway-port=59001
 reconnect-last-server=true
 server-ip=192.168.0.1
 server-name=server-2

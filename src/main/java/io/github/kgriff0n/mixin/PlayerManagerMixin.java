@@ -1,9 +1,9 @@
 package io.github.kgriff0n.mixin;
 
-import io.github.kgriff0n.Config;
+import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.packet.play.SystemChatPacket;
 import io.github.kgriff0n.util.DummyPlayer;
-import io.github.kgriff0n.util.ServersLinkUtil;
+import io.github.kgriff0n.api.ServersLinkApi;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ConnectedClientData;
@@ -29,10 +29,8 @@ public abstract class PlayerManagerMixin {
 
     @Inject(at = @At("HEAD"), method = "broadcast(Lnet/minecraft/text/Text;Z)V")
     private void sendSystemPacket(Text message, boolean overlay, CallbackInfo ci) {
-        if (Config.syncChat) {
-            SystemChatPacket packet = new SystemChatPacket(Text.Serialization.toJsonString(message, SERVER.getRegistryManager()));
-            ServersLinkUtil.send(packet);
-        }
+        SystemChatPacket packet = new SystemChatPacket(Text.Serialization.toJsonString(message, SERVER.getRegistryManager()));
+        ServersLinkApi.send(packet, ServersLink.getServerInfo().getName());
     }
 
     @Inject(at = @At("HEAD"), method = "onPlayerConnect")
@@ -42,8 +40,8 @@ public abstract class PlayerManagerMixin {
 
     @Redirect(method = "onPlayerConnect", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;broadcast(Lnet/minecraft/text/Text;Z)V"))
     private void preventConnectMessage(PlayerManager instance, Text message, boolean overlay) {
-        if (ServersLinkUtil.getPreventConnect().contains(player.getUuid())) {
-            ServersLinkUtil.getPreventConnect().remove(player.getUuid());
+        if (ServersLinkApi.getPreventConnect().contains(player.getUuid())) {
+            ServersLinkApi.getPreventConnect().remove(player.getUuid());
         } else {
             this.broadcast(message, overlay);
         }

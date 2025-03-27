@@ -4,9 +4,9 @@ import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.packet.Packet;
 import io.github.kgriff0n.packet.server.UpdateRolesPacket;
 import io.github.kgriff0n.packet.server.UpdateWhitelistPacket;
-import io.github.kgriff0n.socket.Hub;
-import io.github.kgriff0n.util.ServerInfo;
-import io.github.kgriff0n.util.ServersLinkUtil;
+import io.github.kgriff0n.socket.Gateway;
+import io.github.kgriff0n.server.ServerInfo;
+import io.github.kgriff0n.api.ServersLinkApi;
 
 import java.io.IOException;
 
@@ -23,14 +23,14 @@ public class NewServerPacket implements Packet {
     }
 
     @Override
-    public void onReceive() {
-        Hub hub = Hub.getInstance();
+    public void onReceive(String sender) {
+        Gateway gateway = Gateway.getInstance();
         try {
-            hub.sendTo(new UpdateWhitelistPacket(), this.server.getName());
-            hub.sendTo(new UpdateRolesPacket(), this.server.getName());
+            gateway.sendTo(new UpdateWhitelistPacket(), this.server.getName());
+            gateway.sendTo(new UpdateRolesPacket(), this.server.getName());
         } catch (IOException e) {
             ServersLink.LOGGER.error("Unable to send data to {}", this.server.getName());
         }
-        Hub.getInstance().sendAll(new ServersInfoPacket(ServersLinkUtil.getServerList()));
+        Gateway.getInstance().sendAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
     }
 }
