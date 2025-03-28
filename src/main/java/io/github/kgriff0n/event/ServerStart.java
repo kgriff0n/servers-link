@@ -25,7 +25,6 @@ public class ServerStart implements ServerLifecycleEvents.ServerStarted {
                 gateway.start();
             } else {
                 SubServer connection = new SubServer(ServersLink.getGatewayIp(), ServersLink.getGatewayPort());
-                connection.setDaemon(true);
                 connection.start();
             }
         }

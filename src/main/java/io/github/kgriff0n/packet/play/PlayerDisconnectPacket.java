@@ -24,12 +24,12 @@ public class PlayerDisconnectPacket implements Packet {
     }
 
     @Override
-    public boolean shouldTransfer(Settings settings) {
+    public boolean shouldReceive(Settings settings) {
         return settings.isPlayerListSynced();
     }
 
     @Override
-    public void onReceive(String sender) {
+    public void onReceive() {
         List<ServerPlayerEntity> playerList = SERVER.getPlayerManager().getPlayerList();
         /* Delete the fake player */
         playerList.removeIf(player -> player.getUuid().equals(uuid));
@@ -40,10 +40,12 @@ public class PlayerDisconnectPacket implements Packet {
             list.add(uuid);
             player.networkHandler.sendPacket(new PlayerRemoveS2CPacket(list));
         }
+    }
 
-        if (ServersLink.isGateway) {
-            Gateway.getInstance().removePlayer(uuid);
-            Gateway.getInstance().sendAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
-        }
+    @Override
+    public void onGatewayReceive(String sender) {
+        Packet.super.onGatewayReceive(sender);
+        Gateway.getInstance().removePlayer(uuid);
+        Gateway.getInstance().sendAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
     }
 }

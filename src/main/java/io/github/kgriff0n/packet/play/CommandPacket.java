@@ -26,7 +26,7 @@ public class CommandPacket implements Packet {
     }
 
     @Override
-    public boolean shouldTransfer(Settings settings) {
+    public boolean shouldReceive(Settings settings) {
         return command.startsWith("server run ")
                 || settings.isWhitelistSynced() && command.startsWith("whitelist")
                 || settings.isRolesSynced() &&
@@ -36,7 +36,7 @@ public class CommandPacket implements Packet {
     }
 
     @Override
-    public void onReceive(String sender) {
+    public void onReceive() {
         if (uuid != null) {
             ServerPlayerEntity player = ServersLinkApi.getDummyPlayer(uuid);
             if (player != null) {

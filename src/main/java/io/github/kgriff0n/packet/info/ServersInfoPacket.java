@@ -19,7 +19,7 @@ public class ServersInfoPacket implements Packet {
     }
 
     @Override
-    public void onReceive(String sender) {
+    public void onReceive() {
         ServersLinkApi.setServerList(servers);
     }
 }

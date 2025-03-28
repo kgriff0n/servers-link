@@ -24,12 +24,12 @@ public class NewPlayerPacket implements Packet {
     }
 
     @Override
-    public boolean shouldTransfer(Settings settings) {
+    public boolean shouldReceive(Settings settings) {
         return settings.isPlayerListSynced();
     }
 
     @Override
-    public void onReceive(String sender) {
+    public void onReceive() {
         PropertyMap properties = new PropertyMap.Serializer().deserialize(JsonParser.parseString(this.properties), null, null);
         GameProfile profile = new GameProfile(this.uuid, this.name);
 

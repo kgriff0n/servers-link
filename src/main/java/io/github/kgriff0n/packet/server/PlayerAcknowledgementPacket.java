@@ -1,7 +1,6 @@
 package io.github.kgriff0n.packet.server;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.PropertyMap;
 import io.github.kgriff0n.ServersLink;
@@ -28,10 +27,14 @@ public class PlayerAcknowledgementPacket implements Packet {
     }
 
     @Override
-    public void onReceive(String sender) {
-        if (ServersLink.isGateway) {
-            ServersLinkApi.getServer(serverName).addPlayer(this.uuid, this.name, this.properties);
-            Gateway.getInstance().sendAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
-        }
+    public void onReceive() {
+
+    }
+
+    @Override
+    public void onGatewayReceive(String sender) {
+        Packet.super.onGatewayReceive(sender);
+        ServersLinkApi.getServer(serverName).addPlayer(this.uuid, this.name, this.properties);
+        Gateway.getInstance().sendAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
     }
 }

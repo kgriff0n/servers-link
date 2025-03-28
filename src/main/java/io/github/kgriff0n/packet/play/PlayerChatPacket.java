@@ -18,12 +18,12 @@ public class PlayerChatPacket implements Packet {
     }
 
     @Override
-    public boolean shouldTransfer(Settings settings) {
+    public boolean shouldReceive(Settings settings) {
         return settings.isChatSynced();
     }
 
     @Override
-    public void onReceive(String sender) {
+    public void onReceive() {
         /* Send message */
         ServerPlayerEntity player = SERVER.getPlayerManager().getPlayer(receiver);
         if (player != null) {

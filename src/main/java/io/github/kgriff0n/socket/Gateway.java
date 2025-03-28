@@ -78,8 +78,12 @@ public class Gateway extends Thread {
         for (ServerInfo server : ServersLinkApi.getServerList()) {
             G2SConnection sub = ServersLinkApi.getServerMap().get(server);
             if (sub != null && !server.getName().equals(sourceServer)) {
-                if (packet.shouldTransfer(getSettings(sourceGroup, server.getGroupId()))) {
+                ServersLink.LOGGER.warn("Forward packet {} to {}?", packet.getClass().getName(), server.getName());
+                if (packet.shouldReceive(getSettings(sourceGroup, server.getGroupId()))) {
+                    ServersLink.LOGGER.error("Yes");
                     sub.send(packet);
+                } else {
+                    ServersLink.LOGGER.error("No");
                 }
             }
         }

@@ -26,11 +26,11 @@ public class TeleportationRequestPacket implements Packet {
     }
 
     @Override
-    public void onReceive(String sender) {
+    public void onReceive() {
         ServerPlayerEntity player = ServersLink.SERVER.getPlayerManager().getPlayer(targetUuid);
         Vec3d pos = player != null ? player.getPos() : null;
 
-        if (ServersLink.isGateway) {
+        if (ServersLink.isGateway) { //FIXME
             if (this.destinationServer.equals(ServersLink.getServerInfo().getName())) {
                 /* Execute packet from hub */
                 if (pos != null) {

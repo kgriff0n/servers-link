@@ -77,8 +77,7 @@ public class G2SConnection extends Thread {
                         }
                     }
                 }
-                Gateway.getInstance().forward(packet, server.getName());
-                packet.onReceive(server.getName());
+                packet.onGatewayReceive(server.getName());
             }
             socket.close();
         } catch (IOException e) {

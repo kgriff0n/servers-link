@@ -54,26 +54,32 @@ public class PlayerDataPacket implements Packet {
     }
 
     @Override
-    public void onReceive(String sender) {
+    public boolean shouldReceive(Settings settings) {
+        return settings.isPlayerDataSynced();
+    }
+
+    @Override
+    public void onReceive() {
         /* Remove player data to reload them from file */
         PlayerManager playerManager = SERVER.getPlayerManager();
         ((PlayerManagerAccessor) playerManager).getAdvancementTrackers().remove(this.uuid);
         ((PlayerManagerAccessor) playerManager).getStatisticsMap().remove(this.uuid);
 
-        if (ServersLink.isGateway) {
-            Settings settings = Gateway.getInstance().getSettings(ServersLinkApi.getServer(sender).getGroupId(), ServersLinkApi.getServer(serverToTransfer).getGroupId());
-            if (this.serverToTransfer != null && !this.serverToTransfer.equals(ServersLink.getServerInfo().getName())) { // Redirect the packet to the other server
-                if (settings.isPlayerDataSynced()) {
-                    Gateway.getInstance().sendTo(this, this.serverToTransfer);
-                }
-            } else if (this.serverToTransfer.equals(ServersLink.getServerInfo().getName())) {
-                if (settings.isPlayerDataSynced()) {
-                    writeData();
-                }
-            }
-        } else {
-            writeData();
-        }
-
+//        if (ServersLink.isGateway) {
+//            Settings settings = Gateway.getInstance().getSettings(ServersLinkApi.getServer(sender).getGroupId(), ServersLinkApi.getServer(serverToTransfer).getGroupId());
+//            if (this.serverToTransfer != null && !this.serverToTransfer.equals(ServersLink.getServerInfo().getName())) { // Redirect the packet to the other server
+//                if (settings.isPlayerDataSynced()) {
+//                    Gateway.getInstance().sendTo(this, this.serverToTransfer);
+//                }
+//            } else if (this.serverToTransfer.equals(ServersLink.getServerInfo().getName())) {
+//                if (settings.isPlayerDataSynced()) {
+//                    writeData();
+//                }
+//            }
+//        } else {
+//            writeData();
+//        }
+        writeData();
+        ServersLink.LOGGER.warn("Receive data packet for {}", uuid);
     }
 }

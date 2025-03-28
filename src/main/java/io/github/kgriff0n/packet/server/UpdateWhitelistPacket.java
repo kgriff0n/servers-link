@@ -19,7 +19,7 @@ public class UpdateWhitelistPacket implements Packet {
     }
 
     @Override
-    public void onReceive(String sender) {
+    public void onReceive() {
         try {
             write();
         } catch (IOException e) {

@@ -31,27 +31,22 @@ public class TeleportationAcceptPacket implements Packet {
     }
 
     @Override
-    public void onReceive(String sender) {
+    public void onReceive() {
         ServerPlayerEntity player = ServersLink.SERVER.getPlayerManager().getPlayer(senderUuid);
-        if (ServersLink.isGateway) {
-            if (this.originServer.equals(ServersLink.getServerInfo().getName())) {
-                /* Execute packet from hub */
-                if (player != null) {
-                    ((IPlayerServersLink) player).servers_link$setLastServer(ServersLink.getServerInfo().getName());
-                    ((IPlayerServersLink) player).servers_link$setServerPos(this.destinationServer, new Vec3d(targetX, targetY, targetZ));
-                    ServersLinkApi.transferPlayer(player, this.destinationServer);
-                }
-            } else {
-                /* Redirect the packet to the other server */
-                Gateway.getInstance().sendTo(this, this.destinationServer);
-            }
-        } else {
-            /* Sub-server receive the packet */
-            if (player != null) {
-                ((IPlayerServersLink) player).servers_link$setLastServer(ServersLink.getServerInfo().getName());
-                ((IPlayerServersLink) player).servers_link$setServerPos(this.destinationServer, new Vec3d(targetX, targetY, targetZ));
-                ServersLinkApi.transferPlayer(player, this.destinationServer);
-            }
+        if (this.originServer.equals(ServersLink.getServerInfo().getName()) && player != null) {
+            /* We are in the correct server */
+            ((IPlayerServersLink) player).servers_link$setLastServer(ServersLink.getServerInfo().getName());
+            ((IPlayerServersLink) player).servers_link$setServerPos(this.destinationServer, new Vec3d(targetX, targetY, targetZ));
+            ServersLinkApi.transferPlayer(player, this.destinationServer);
+        }
+    }
+
+    @Override
+    public void onGatewayReceive(String sender) {
+        Packet.super.onGatewayReceive(sender);
+        if (!this.originServer.equals(ServersLink.getServerInfo().getName())) {
+            /* Redirect the packet to the other server */
+            Gateway.getInstance().sendTo(this, this.destinationServer);
         }
     }
 }

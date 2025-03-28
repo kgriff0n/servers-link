@@ -23,7 +23,10 @@ public class NewServerPacket implements Packet {
     }
 
     @Override
-    public void onReceive(String sender) {
+    public void onReceive() {}
+
+    @Override
+    public void onGatewayReceive(String sender) {
         Gateway gateway = Gateway.getInstance();
         try {
             gateway.sendTo(new UpdateWhitelistPacket(), this.server.getName());

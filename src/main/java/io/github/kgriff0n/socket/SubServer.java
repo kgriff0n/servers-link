@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import static io.github.kgriff0n.ServersLink.IS_RUNNING;
 import static io.github.kgriff0n.ServersLink.SERVER;
 
 public class SubServer extends Thread {
@@ -74,9 +75,9 @@ public class SubServer extends Thread {
         try {
             send(new NewServerPacket(ServersLink.getServerInfo()));
             send(new ServerStatusPacket(ServersLink.getServerInfo().getName(), 20.0f, false));
-            while (SERVER.isRunning()) {
+            while (IS_RUNNING) {
                 try {
-                    ((Packet)in.readObject()).onReceive(null);
+                    ((Packet)in.readObject()).onReceive();
                 } catch (ClassNotFoundException e) {
                     ServersLink.LOGGER.error("Receive invalid data");
                 }
