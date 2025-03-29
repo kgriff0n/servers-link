@@ -75,7 +75,7 @@ public class ServerInfo implements Serializable {
 
     public void addPlayer(UUID uuid, String name, String properties) {
         this.playersList.put(uuid, name);
-        this.playersList.put(uuid, properties);
+        this.playersPropertiesList.put(uuid, properties);
     }
 
     public void removePlayer(UUID uuid) {

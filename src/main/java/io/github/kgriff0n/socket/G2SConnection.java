@@ -54,7 +54,9 @@ public class G2SConnection extends Thread {
                 Packet packet = (Packet) in.readObject();
                 if (packet instanceof NewServerPacket pkt) {
                     this.server = pkt.getServer();
+                    this.setName(String.format("%s thread", server.getName()));
                     ServersLinkApi.addServer(server, this);
+                    Gateway.getInstance().getGroup(server.getGroupId()).addServer(server);
                     ServersLink.LOGGER.info("Add {} sub-server", server.getName());
                     /* Adds all players to the new server */
                     Settings globalSettings = Gateway.getInstance().getGroup("global").getSettings();

@@ -45,6 +45,7 @@ public class PlayerDisconnect implements ServerPlayConnectionEvents.Disconnect {
                 connection.send(packet);
                 /* Force inventory saving */
                 SERVER.execute(() -> {
+                    //FIXME don't force data save but detect post-disconnection
                     ((PlayerManagerInvoker) SERVER.getPlayerManager()).servers_link$savePlayerData(serverPlayNetworkHandler.player);
                     try {
                         connection.send(new PlayerDataPacket(uuid));

@@ -127,7 +127,7 @@ public class ServerCommand {
             } else if (ServersLinkApi.getServer(serverName) == null) {
                 player.sendMessage(Text.literal("This server does not exist").formatted(Formatting.RED));
             } else {
-                ServersLinkApi.transferPlayer(player, serverName);
+                ServersLinkApi.transferPlayer(player, ServersLink.getServerInfo().getName(), serverName);
             }
         }
         return Command.SINGLE_SUCCESS;

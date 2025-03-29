@@ -59,7 +59,7 @@ public class PlayerJoin implements ServerPlayConnectionEvents.Join {
                         newPlayer.sendMessage(Text.literal("An unexpected error occurred while attempting to reconnect you to your previous server").formatted(Formatting.RED));
                     }
                 } else {
-                    ServersLinkApi.transferPlayer(newPlayer, lastServer);
+                    ServersLinkApi.transferPlayer(newPlayer, ServersLink.getServerInfo().getName(), lastServer);
                 }
             }
         } else {

@@ -37,7 +37,7 @@ public class TeleportationAcceptPacket implements Packet {
             /* We are in the correct server */
             ((IPlayerServersLink) player).servers_link$setLastServer(ServersLink.getServerInfo().getName());
             ((IPlayerServersLink) player).servers_link$setServerPos(this.destinationServer, new Vec3d(targetX, targetY, targetZ));
-            ServersLinkApi.transferPlayer(player, this.destinationServer);
+            ServersLink.SERVER.execute(() -> ServersLinkApi.transferPlayer(player, this.originServer, this.destinationServer));
         }
     }
 

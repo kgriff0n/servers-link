@@ -202,7 +202,7 @@ public class ServersLinkApi {
      * @param player the player to transfer
      * @param serverName the name of the server to which the player will be transferred
      */
-    public static void transferPlayer(ServerPlayerEntity player, String serverName) {
+    public static void transferPlayer(ServerPlayerEntity player, String originServer, String serverName) {
 
         ((IPlayerServersLink) player).servers_link$setNextServer(serverName);
         /* Force inventory saving */
@@ -213,10 +213,12 @@ public class ServersLinkApi {
         if (ServersLink.isGateway) {
             Gateway gateway = Gateway.getInstance();
             /* remove player from list */
-            ServersLinkApi.getServer(ServersLink.getServerInfo().getName()).removePlayer(player.getUuid());
+//            ServersLinkApi.getServer(ServersLink.getServerInfo().getName()).removePlayer(player.getUuid());
 
             /* add player to other server list and send packet */
-            gateway.sendTo(new PlayerTransferPacket(player.getUuid()), serverName);
+            PlayerTransferPacket transferPacket = new PlayerTransferPacket(player.getUuid(), serverName);
+            transferPacket.onGatewayReceive(originServer);
+//            gateway.sendTo(new PlayerTransferPacket(player.getUuid()), serverName);
             Settings settings = Gateway.getInstance().getSettings(ServersLinkApi.getServer(ServersLink.getServerInfo().getName()).getGroupId(), ServersLinkApi.getServer(serverName).getGroupId());
             if (settings.isPlayerDataSynced()) {
                 SERVER.execute(() -> {
@@ -241,7 +243,7 @@ public class ServersLinkApi {
         }
 
         /* prevent disconnect message */
-        ServersLinkApi.getPreventDisconnect().add(player.getUuid());
+//        ServersLinkApi.getPreventDisconnect().add(player.getUuid());
         player.networkHandler.sendPacket(new ServerTransferS2CPacket(server.getIp(), server.getPort()));
         if (!player.isDisconnected()) {
             player.networkHandler.disconnect(Text.translatable("connect.transferring"));
