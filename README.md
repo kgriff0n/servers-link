@@ -198,7 +198,7 @@ Here is an example schema of this situation. You can find the configuration fold
 > [!IMPORTANT]  
 > The configuration files must be placed in the `config/servers-link` folder and the server IP addresses and ports must be the same as those specified in `info.json` files.
 
-![Schema](img\schema.png)
+![Schema](img/schema.png)
 
 ## Commands
 
