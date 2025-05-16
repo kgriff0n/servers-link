@@ -16,6 +16,8 @@ public class ServerInfo implements Serializable {
     private final String ip;
     private final int port;
 
+    private final int randomValue;
+
     private float tps;
     private boolean down;
 
@@ -33,6 +35,8 @@ public class ServerInfo implements Serializable {
 
         this.playersList = new HashMap<>();
         this.playersPropertiesList = new HashMap<>();
+
+        this.randomValue = new Random().nextInt();
     }
 
     public String getGroupId() {
@@ -104,6 +108,11 @@ public class ServerInfo implements Serializable {
             return serverInfo.name.equals(this.name);
         }
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s[group=%s,player_list=%s,rng=%s]", getName(), getGroupId(), new ArrayList<>(playersList.keySet()), randomValue);
     }
 
     @Override

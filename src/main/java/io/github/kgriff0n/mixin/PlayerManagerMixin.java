@@ -2,6 +2,7 @@ package io.github.kgriff0n.mixin;
 
 import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.packet.play.SystemChatPacket;
+import io.github.kgriff0n.packet.server.PlayerDataPacket;
 import io.github.kgriff0n.util.DummyPlayer;
 import io.github.kgriff0n.api.ServersLinkApi;
 import net.minecraft.network.ClientConnection;
@@ -16,6 +17,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.io.IOException;
 
 import static io.github.kgriff0n.ServersLink.SERVER;
 
@@ -36,6 +39,15 @@ public abstract class PlayerManagerMixin {
     @Inject(at = @At("HEAD"), method = "onPlayerConnect")
     private void getPlayer(ClientConnection connection, ServerPlayerEntity player, ConnectedClientData clientData, CallbackInfo ci) {
         this.player = player;
+    }
+
+    @Inject(at = @At("TAIL"), method = "savePlayerData")
+    private void sendPlayerData(ServerPlayerEntity player, CallbackInfo ci) {
+        try {
+            ServersLinkApi.send(new PlayerDataPacket(player.getUuid()), ServersLink.getServerInfo().getName());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Redirect(method = "onPlayerConnect", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;broadcast(Lnet/minecraft/text/Text;Z)V"))

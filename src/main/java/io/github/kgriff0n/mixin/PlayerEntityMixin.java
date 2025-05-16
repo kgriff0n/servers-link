@@ -19,18 +19,11 @@ import java.util.HashMap;
 public class PlayerEntityMixin implements IPlayerServersLink {
 
     @Unique
-    private String lastServer = "";
-    @Unique
-    private String nextServer = "";
-    @Unique
     private HashMap<String, Vec3d> serversPos = new HashMap<>();
 
     @Inject(at = @At("HEAD"), method = "writeCustomDataToNbt")
     private void writeNbt(NbtCompound nbt, CallbackInfo ci) {
         NbtCompound serversLink = new NbtCompound();
-        serversLink.putString("LastServer", this.lastServer);
-        serversLink.putString("NextServer", this.nextServer);
-
         NbtCompound nbtServersPos = new NbtCompound();
         serversPos.forEach((name, pos) -> {
             NbtList position = new NbtList();
@@ -46,9 +39,6 @@ public class PlayerEntityMixin implements IPlayerServersLink {
     @Inject(at = @At("HEAD"), method = "readCustomDataFromNbt")
     private void readNbt(NbtCompound nbt, CallbackInfo ci) {
         NbtCompound serversLink = nbt.getCompound("ServersLink");
-        this.lastServer = serversLink.getString("LastServer");
-        this.nextServer = serversLink.getString("NextServer");
-
         this.serversPos = new HashMap<>();
         NbtCompound nbtServersPos = serversLink.getCompound("Pos");
         for (String server : nbtServersPos.getKeys()) {
@@ -56,26 +46,6 @@ public class PlayerEntityMixin implements IPlayerServersLink {
             Vec3d pos = new Vec3d(position.getDouble(0), position.getDouble(1), position.getDouble(2));
             serversPos.put(server, pos);
         }
-    }
-
-    @Override
-    public String servers_link$getLastServer() {
-        return this.lastServer;
-    }
-
-    @Override
-    public void servers_link$setLastServer(String name) {
-        this.lastServer = name;
-    }
-
-    @Override
-    public String servers_link$getNextServer() {
-        return this.nextServer;
-    }
-
-    @Override
-    public void servers_link$setNextServer(String name) {
-        this.nextServer = name;
     }
 
     @Override

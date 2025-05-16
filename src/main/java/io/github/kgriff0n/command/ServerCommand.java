@@ -32,6 +32,10 @@ import static net.minecraft.server.command.CommandManager.literal;
 public class ServerCommand {
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> dispatcher.register(literal("server")
+                .then(literal("debug")
+                        .requires(Permissions.require("server.debug", 2))
+                        .executes(context -> debug())
+                )
                 .then(literal("list")
                         .requires(Permissions.require("server.list", 2))
                         .executes(context -> list(context.getSource()))
@@ -81,6 +85,13 @@ public class ServerCommand {
         ));
     }
 
+    private static int debug() {
+        for (ServerInfo serverInfo : ServersLinkApi.getServerList()) {
+            ServersLink.LOGGER.info(serverInfo.toString());
+        }
+        return Command.SINGLE_SUCCESS;
+    }
+
     private static int list(ServerCommandSource source) {
         ServerPlayerEntity player = source.getPlayer();
         player.sendMessage(Text.literal("Server List").formatted(Formatting.BOLD, Formatting.DARK_GRAY));
@@ -117,9 +128,9 @@ public class ServerCommand {
 
     private static int join(ServerPlayerEntity player, String serverName) {
         if (player != null) {
+            ServersLink.LOGGER.info(ServersLinkApi.getServerMap().toString());
             /* Save player pos */
             String name = ServersLink.getServerInfo().getName();
-            ((IPlayerServersLink) player).servers_link$setLastServer(name);
             ((IPlayerServersLink) player).servers_link$setServerPos(name, player.getPos());
 
             if (name.equals(serverName)) {

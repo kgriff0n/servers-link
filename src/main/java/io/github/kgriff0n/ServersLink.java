@@ -76,6 +76,7 @@ public class ServersLink implements ModInitializer {
 					jsonObject.get("server-port").getAsInt()
 			);
 		} catch (IOException e) {
+			CONFIG_ERROR = true;
 			ServersLink.LOGGER.error("Unable to read info.json");
 		}
 	}

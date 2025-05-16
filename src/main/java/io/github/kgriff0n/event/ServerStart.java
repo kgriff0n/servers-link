@@ -1,5 +1,6 @@
 package io.github.kgriff0n.event;
 
+import io.github.kgriff0n.PlayersInformation;
 import io.github.kgriff0n.socket.SubServer;
 import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.socket.Gateway;
@@ -12,15 +13,17 @@ public class ServerStart implements ServerLifecycleEvents.ServerStarted {
     @Override
     public void onServerStarted(MinecraftServer minecraftServer) {
         if (CONFIG_ERROR) {
-            ServersLink.LOGGER.error("Please configure the servers-link.properties file !");
+            ServersLink.LOGGER.error("You must configure servers-link before starting your server");
             minecraftServer.stop(false);
         } else {
-
             /* Initialize SERVER */
             ServersLink.SERVER = minecraftServer;
-
             if (ServersLink.isGateway) {
+                // Players information
+                PlayersInformation.loadPlayersInfo(minecraftServer);
+
                 Gateway gateway = new Gateway(ServersLink.getGatewayPort());
+                gateway.loadConfig();
                 gateway.setDaemon(true);
                 gateway.start();
             } else {

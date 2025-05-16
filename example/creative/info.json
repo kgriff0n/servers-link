@@ -1,0 +1,9 @@
+{
+  "group": "creative",
+  "gateway": false,
+  "gateway-ip": "127.0.0.1",
+  "gateway-port": 59001,
+  "server-name": "Creative",
+  "server-ip": "127.0.0.1",
+  "server-port": 25566
+}

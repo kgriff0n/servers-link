@@ -1,5 +1,6 @@
 package io.github.kgriff0n.packet.play;
 
+import io.github.kgriff0n.PlayersInformation;
 import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.packet.Packet;
 import io.github.kgriff0n.packet.server.PreventConnectPacket;
@@ -16,12 +17,6 @@ public class PlayerTransferPacket implements Packet {
     private final UUID uuid;
 
     private final String serverToTransfer;
-
-    public PlayerTransferPacket(UUID uuid) {
-        this.uuid = uuid;
-
-        this.serverToTransfer = null;
-    }
 
     public PlayerTransferPacket(UUID uuid, String serverToTransfer) {
         this.uuid = uuid;
@@ -44,11 +39,11 @@ public class PlayerTransferPacket implements Packet {
 
     @Override
     public void onGatewayReceive(String sender) {
-        Packet.super.onGatewayReceive(sender);
+//        Packet.super.onGatewayReceive(sender);
         /* The player is sent to the hub, remove from the player list to allowed it to connect */
         /* Add player to transferred list, to block the join message */
         Gateway gateway = Gateway.getInstance();
-        if (this.serverToTransfer == null || this.serverToTransfer.equals(ServersLink.getServerInfo().getName())) {
+        if (this.serverToTransfer.equals(ServersLink.getServerInfo().getName())) {
             gateway.removePlayer(this.uuid);
         } else { /* Redirect the packet to the other server, add the player to the player list of this server */
             gateway.sendTo(this, this.serverToTransfer);
@@ -58,5 +53,7 @@ public class PlayerTransferPacket implements Packet {
                 gateway.sendTo(new PreventDisconnectPacket(uuid), sender);
             }
         }
+        /* Save last server */
+        PlayersInformation.setLastServer(uuid, serverToTransfer);
     }
 }

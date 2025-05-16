@@ -1,5 +1,6 @@
 package io.github.kgriff0n.event;
 
+import io.github.kgriff0n.PlayersInformation;
 import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.packet.info.NewPlayerPacket;
 import io.github.kgriff0n.packet.server.PlayerAcknowledgementPacket;
@@ -42,11 +43,12 @@ public class PlayerJoin implements ServerPlayConnectionEvents.Join {
                 ServersLinkApi.getPreventDisconnect().add(newPlayer.getUuid());
             } else {
 
-                String lastServer = ((IPlayerServersLink) newPlayer).servers_link$getLastServer();
-                String nextServer = ((IPlayerServersLink) newPlayer).servers_link$getNextServer();
+//                String lastServer = ((IPlayerServersLink) newPlayer).servers_link$getLastServer();
+//                String nextServer = ((IPlayerServersLink) newPlayer).servers_link$getNextServer();
+                String lastServer = PlayersInformation.getLastServer(newPlayer.getUuid());
                 ServerInfo lastServerInfo = ServersLinkApi.getServer(lastServer);
-                if (lastServer == null || lastServer.equals(ServersLink.getServerInfo().getName()) || nextServer.equals(ServersLink.getServerInfo().getName())
-                        || lastServerInfo == null || lastServerInfo.isDown() || !gateway.isReconnectToLastServer()) {
+                if (lastServer == null || lastServer.equals(ServersLink.getServerInfo().getName())
+                        || lastServerInfo == null || lastServerInfo.isDown() || !gateway.shouldReconnectToLastServer()) {
                     ServersLinkApi.getServer(ServersLink.getServerInfo().getName()).addPlayer(newPlayer.getGameProfile());
                     /* Delete the fake player */
                     SERVER.getPlayerManager().getPlayerList().removeIf(player -> player.getName().equals(newPlayer.getName()));
@@ -55,7 +57,7 @@ public class PlayerJoin implements ServerPlayConnectionEvents.Join {
                     gateway.forward(dummyPlayer, ServersLink.getServerInfo().getName());
                     gateway.sendAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
 
-                    if (gateway.isReconnectToLastServer() && lastServer != null && !lastServer.isEmpty() && (lastServerInfo == null || lastServerInfo.isDown())) {
+                    if (gateway.shouldReconnectToLastServer() && lastServer != null && !lastServer.isEmpty() && (lastServerInfo == null || lastServerInfo.isDown())) {
                         newPlayer.sendMessage(Text.literal("An unexpected error occurred while attempting to reconnect you to your previous server").formatted(Formatting.RED));
                     }
                 } else {

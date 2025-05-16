@@ -28,7 +28,7 @@ public class Gateway extends Thread {
     private ServerSocket serverSocket;
 
     private boolean whitelistIp;
-    private List<String> whitelistedIp;
+    private final List<String> whitelistedIp = new ArrayList<>();
     private boolean reconnectLastServer;
 
     public Gateway(int port) {
@@ -57,9 +57,15 @@ public class Gateway extends Thread {
     }
 //
     public void sendTo(Packet packet, String serverName) {
-        for (ServerInfo server : ServersLinkApi.getServerList()) {
-            if (server.getName().equals(serverName)) {
-                ServersLinkApi.getServerMap().get(server).send(packet);
+        if (serverName.equals(ServersLink.getServerInfo().getName())) {
+            packet.onReceive();
+        } else {
+            ServersLink.LOGGER.info(serverName);
+            for (ServerInfo server : ServersLinkApi.getServerList()) {
+                ServersLink.LOGGER.info(server.toString());
+                if (server.getName().equals(serverName)) {
+                    ServersLinkApi.getServerMap().get(server).send(packet);
+                }
             }
         }
     }
@@ -119,7 +125,7 @@ public class Gateway extends Thread {
         return groups.get(groupId);
     }
 
-    private void loadConfig() {
+    public void loadConfig() {
         Path path = ServersLink.CONFIG.resolve("config.json");
         try {
             String jsonContent = Files.readString(path);
@@ -135,7 +141,7 @@ public class Gateway extends Thread {
         }
     }
 
-    public boolean isWhitelistIp() {
+    public boolean hasWhitelistIp() {
         return whitelistIp;
     }
 
@@ -143,7 +149,7 @@ public class Gateway extends Thread {
         return whitelistedIp;
     }
 
-    public boolean isReconnectToLastServer() {
+    public boolean shouldReconnectToLastServer() {
         return reconnectLastServer;
     }
 

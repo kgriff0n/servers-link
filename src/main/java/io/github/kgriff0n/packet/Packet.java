@@ -23,9 +23,9 @@ public interface Packet extends Serializable {
     }
 
     /**
-     * Determines whether the hub should transfer FIXME
-     * the packet to other servers, false by default
-     * @return true if the packet is to be transferred,
+     * Determines whether a server should
+     * receive the packet, based on settings
+     * @return true if the packet should be received,
      *         false otherwise
      */
     default boolean shouldReceive(Settings settings) {

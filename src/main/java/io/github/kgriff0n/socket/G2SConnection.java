@@ -84,6 +84,7 @@ public class G2SConnection extends Thread {
             socket.close();
         } catch (IOException e) {
             ServersLink.LOGGER.error("Error {} in sub-server {}", e.getMessage(), server.getName());
+            ServersLink.LOGGER.info(this.server.toString());
             ServersLinkApi.disconnectServer(this.server);
             ServersLinkApi.broadcastToOp(Text.literal("Sub-server " + server.getName() + " has disconnected").formatted(Formatting.RED));
         } catch (ClassNotFoundException e) {

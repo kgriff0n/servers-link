@@ -1,0 +1,5 @@
+{
+  "whitelist_ip": false,
+  "whitelisted_ip": [],
+  "reconnect_last_server": true
+}

@@ -1,0 +1,28 @@
+{
+  "groups": {
+    "global": {
+      "chat": false,
+      "player_data": false,
+      "player_list": false,
+      "roles": false,
+      "whitelist": false
+    },
+    "survival": {
+      "player_data": true,
+      "player_list": true,
+      "chat": true
+    },
+    "creative": {
+      "player_data": true,
+      "player_list": true,
+      "chat": true
+    }
+  },
+  "rules": [
+    {
+      "groups": ["survival", "creative"],
+      "player_list": true,
+      "chat": true
+    }
+  ]
+}

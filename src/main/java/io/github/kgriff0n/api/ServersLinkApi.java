@@ -2,13 +2,10 @@ package io.github.kgriff0n.api;
 
 import com.mojang.authlib.GameProfile;
 import io.github.kgriff0n.ServersLink;
-import io.github.kgriff0n.mixin.PlayerManagerInvoker;
 import io.github.kgriff0n.packet.Packet;
 import io.github.kgriff0n.packet.info.ServersInfoPacket;
 import io.github.kgriff0n.packet.play.PlayerDisconnectPacket;
-import io.github.kgriff0n.packet.server.PlayerDataPacket;
 import io.github.kgriff0n.packet.play.PlayerTransferPacket;
-import io.github.kgriff0n.server.Settings;
 import io.github.kgriff0n.socket.Gateway;
 import io.github.kgriff0n.socket.G2SConnection;
 import io.github.kgriff0n.socket.SubServer;
@@ -21,7 +18,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.util.*;
 
 import static io.github.kgriff0n.ServersLink.SERVER;
@@ -87,6 +83,7 @@ public class ServersLinkApi {
      * @param connection used from the hub for packet transfer
      */
     public static void addServer(ServerInfo server, @Nullable G2SConnection connection) {
+        serverList.remove(server); // remove old one
         serverList.put(server, connection);
     }
 
@@ -103,6 +100,7 @@ public class ServersLinkApi {
         });
         gateway.sendAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
         server.getPlayersList().clear();
+        server.getGameProfile().clear();
         serverList.put(server, null);
     }
 
@@ -204,9 +202,8 @@ public class ServersLinkApi {
      */
     public static void transferPlayer(ServerPlayerEntity player, String originServer, String serverName) {
 
-        ((IPlayerServersLink) player).servers_link$setNextServer(serverName);
         /* Force inventory saving */
-        ((PlayerManagerInvoker)SERVER.getPlayerManager()).servers_link$savePlayerData(player);
+//        ((PlayerManagerInvoker)SERVER.getPlayerManager()).servers_link$savePlayerData(player);
 
         ServerInfo server = ServersLinkApi.getServer(serverName);
 
@@ -219,27 +216,27 @@ public class ServersLinkApi {
             PlayerTransferPacket transferPacket = new PlayerTransferPacket(player.getUuid(), serverName);
             transferPacket.onGatewayReceive(originServer);
 //            gateway.sendTo(new PlayerTransferPacket(player.getUuid()), serverName);
-            Settings settings = Gateway.getInstance().getSettings(ServersLinkApi.getServer(ServersLink.getServerInfo().getName()).getGroupId(), ServersLinkApi.getServer(serverName).getGroupId());
-            if (settings.isPlayerDataSynced()) {
-                SERVER.execute(() -> {
-                    try {
-                        gateway.sendTo(new PlayerDataPacket(player.getUuid(), serverName), serverName);
-                    } catch (IOException e) {
-                        ServersLink.LOGGER.error("Unable to read player data");
-                    }
-                });
-            }
+//            Settings settings = Gateway.getInstance().getSettings(ServersLinkApi.getServer(ServersLink.getServerInfo().getName()).getGroupId(), ServersLinkApi.getServer(serverName).getGroupId());
+//            if (settings.isPlayerDataSynced()) {
+//                SERVER.execute(() -> {
+//                    try {
+//                        gateway.sendTo(new PlayerDataPacket(player.getUuid(), serverName), serverName);
+//                    } catch (IOException e) {
+//                        ServersLink.LOGGER.error("Unable to read player data");
+//                    }
+//                });
+//            }
         } else {
             /* send packet, add player to transferred list and transfer the player */
             SubServer connection = SubServer.getInstance();
             connection.send(new PlayerTransferPacket(player.getUuid(), serverName));
-            SERVER.execute(() -> {
-                try {
-                    connection.send(new PlayerDataPacket(player.getUuid(), serverName));
-                } catch (IOException e) {
-                    ServersLink.LOGGER.error("Unable to read player data");
-                }
-            });
+//            SERVER.execute(() -> {
+//                try {
+//                    connection.send(new PlayerDataPacket(player.getUuid(), serverName));
+//                } catch (IOException e) {
+//                    ServersLink.LOGGER.error("Unable to read player data");
+//                }
+//            });
         }
 
         /* prevent disconnect message */

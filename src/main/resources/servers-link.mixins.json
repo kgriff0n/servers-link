@@ -6,7 +6,6 @@
     "CommandManagerMixin",
     "PlayerEntityMixin",
     "PlayerManagerAccessor",
-    "PlayerManagerInvoker",
     "PlayerManagerMixin",
     "ServerPlayNetworkHandlerMixin"
   ],

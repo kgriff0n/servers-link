@@ -17,7 +17,7 @@ If you have any questions, feel free to ask on [discord](https://discord.com/inv
 ## Installation
 
 As this mod is only `server-side` you first need to set up a Fabric server.  After your server is set up, put the `.jar` file downloaded from [Modrinth](https://modrinth.com/mod/servers-link) in the `./mods` folder (you also need to install [Fabric API](https://modrinth.com/mod/fabric-api)).  
-Once you have put everything in the folder, start the server. It will immediately close with an error and the `servers-link.properties` file will be generated at the root of the server.
+Once you have put everything in the folder, start the server. It will immediately close with an error and the next thing to do will be to configure everything.
 
 ## Configuration
 
@@ -28,109 +28,177 @@ As this mod uses the transfer system added in 1.20.5, you need to configure your
 accepts-transfers=true
 ```
 
-Next, you have to configure `servers-link.properties`. This file contains the following options.
+Next, open the `config` folder on your server and create a new folder named `servers-link`. Inside this folder, you must always have a file named `info.json`. This file is used to describe all the information related to the current server.
+The following options must be configured:
 
 | Option                | Description                                                                                                                                                               |    Value     |
 |-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------:|
-| gateway                   | If the server is the gateway or not. Only one of your servers can be the gateway.<br/>This is the server the players will use to connect.                                         | True / False |
-| gateway-ip                | This is not the IP used by players to connect, but the IP used to communicate between the servers.<br/>If all your servers are in local you can set this to  `127.0.0.1`. |  IP Address  |
-| gateway-port              | Same as above. If you want to connect servers located in another network, you must allow connections to this port.                                                        |     Port     |
-| reconnect-last-server | Indicates whether players should be reconnected to the last server from which they disconnected.                                                                          | True / False |
-| server-ip             | IP of the Minecraft server.                                                                                                                                               |  IP Address  |
+| group                 | The group in which the server will be located. Groups are explained in the next section.                                                                                  |    String    |
+| gateway               | If the server is the gateway or not. Only one of your servers can be the gateway.<br/>This is the server the players will use to connect.                                 | True / False |
+| gateway-ip            | This is not the IP used by players to connect, but the IP used to communicate between the servers.<br/>If all your servers are in local you can set this to  `127.0.0.1`. |  IP Address  |
+| gateway-port          | Same as above. If you want to connect servers located in another network, you must allow connections to this port.                                                        |     Port     |
 | server-name           | Name of the server (multiple servers can't have the same name).                                                                                                           |    String    |
+| server-ip             | IP of the Minecraft server.                                                                                                                                               |  IP Address  |
 | server-port           | Port of the Minecraft server.                                                                                                                                             |     Port     |
-| sync-chat             | If chat messages are shared between all servers.                                                                                                                          | True / False |
-| sync-player-data      | If inventory, achievements and statistics of players are synchronized between servers.                                                                                    | True / False |
-| sync-player-list      | If player list is synchronized between servers.                                                                                                                           | True / False |
-| sync-roles            | If roles are synchronized between servers (support Player Roles).                                                                                                         | True / False |
-| sync-whitelist        | If whitelist is synchronized between servers.                                                                                                                             | True / False |
-| whitelist-ip          | Set to true if you don't want all IPs to be able to connect to the gateway.                                                                                                   | True / False |
-| whitelisted-ip        | A list of allowed IPs (eg: "192.168.0.1,192.168.0.2").                                                                                                                    | List of IPs  |
 
-> [!WARNING]
-> If you want sync-chat to be true, you must also have sync-player-list set to true.
-
-> [!CAUTION]
-> If `whitelist-ip` is set to `false` and the **gateway's port is open**, anyone can install this mod and connect their server to your gateway.
+Here is an example file:
+```json 
+{
+  "group": "global",
+  "gateway": true,
+  "gateway-ip": "127.0.0.1",
+  "gateway-port": 59001,
+  "server-name": "Hub",
+  "server-ip": "127.0.0.1",
+  "server-port": 25565
+}
+```
 
 > [!IMPORTANT]
 > All ports specified in `server-port` must remain open.  
 > When you stop the gateway server, all other servers are stopped.
 
+If the server is your gateway, you must add another file named `config.json`. This file contains the general configuration settings for the gateway.
+
+| Option                | Description                                                                                      |        Value         |
+|-----------------------|--------------------------------------------------------------------------------------------------|:--------------------:|
+| whitelist_ip          | Set to true if you don't want all IPs to be able to connect to the hub.                          |     True / False     |
+| whitelisted_ip        | A list of allowed IPs (eg: ["192.168.0.1","192.168.0.2"]).                                       | List of IP Addresses |
+| reconnect_last_server | Indicates whether players should be reconnected to the last server from which they disconnected. |     True / False     |
+
+Here is an example file:
+```json
+{
+  "whitelist_ip": false,
+  "whitelisted_ip": [],
+  "reconnect_last_server": true
+}
+```
+
+> [!CAUTION]
+> If `whitelist-ip` is set to `false` and the **gateway's port is open**, anyone can install this mod and connect their server to your gateway.
+
+### Groups
+
+If the server is the gateway, you must add another file named `groups.json` to define the groups.
+For each group, you can configure the following options:
+
+| Option      | Description                                                                            |    Value     |
+|-------------|----------------------------------------------------------------------------------------|:------------:|
+| chat        | If chat messages are shared between all servers.                                       | True / False |
+| player-data | If inventory, achievements and statistics of players are synchronized between servers. | True / False |
+| player-list | If player list is synchronized between servers.                                        | True / False |
+| roles       | If roles are synchronized between servers (support Player Roles).                      | True / False |
+| whitelist   | If whitelist is synchronized between servers.                                          | True / False |
+
+
+> [!WARNING]
+> If you set chat to true, you must also set player-list to true.
+
+The default group is named `global`. For this group, you must configure all the options listed above.  
+Then, you can add as many groups as you want. For each new group, you only need to configure the options that differ from those in the `global` group.
+
 ### Example
-```mermaid
-graph TD;
-    A["`Hub
-    *ip: 192.168.0.1*
-    *port: 25565*`"];
-    B["`Server 1
-    *ip: 192.168.0.1*
-    *port: 25566*`"];
-    C["`Server 2
-    *ip: 192.168.0.1*
-    *port: 25567*`"];
-    A<-->B;
-    A<-->C;
+
+Let’s imagine we want to set up a hub server that will be the gateway, the entry point to all our servers.
+In addition to the hub, we have two survival servers and one creative server.
+The player list and chat should not be synchronized between the hub and the other servers. However, they should be synchronized between the survival servers and the creative server.
+Player data should be synchronized only between the two survival servers, and not with the creative server.
+
+The following `groups.json` correspond to this situation:
+
+```json
+{
+  "groups": {
+    "global": {
+      "chat": false,
+      "player_data": false,
+      "player_list": false,
+      "roles": false,
+      "whitelist": false
+    },
+    "survival": {
+      "player_data": true,
+      "player_list": true,
+      "chat": true
+    },
+    "creative": {
+      "player_data": true,
+      "player_list": true,
+      "chat": true
+    }
+  },
+  "rules": [
+    {
+      "groups": ["survival", "creative"],
+      "player_list": true,
+      "chat": true
+    }
+  ]
+}
 ```
 
-For this example, all the servers are in local, and we want to use `59001` as the gateway port.
+The `rules` section allow us to enable some settings between a defined set of servers.
 
-#### Hub
+And these are the `info.json` files for each server:
 
-```properties
-gateway=true
-gateway-ip=127.0.0.1
-gateway-port=59001
-reconnect-last-server=true
-server-ip=192.168.0.1
-server-name=gateway
-server-port=25565
-sync-chat=true
-sync-player-data=true
-sync-player-list=true
-sync-roles=true
-sync-whitelist=true
-whitelist-ip=false
-whitelisted-ip=
+`Hub`
+```json
+{
+  "group": "global",
+  "gateway": true,
+  "gateway-ip": "127.0.0.1",
+  "gateway-port": 59001,
+  "server-name": "Hub",
+  "server-ip": "127.0.0.1",
+  "server-port": 25565
+}
+```
+`Creative`
+```json
+{
+  "group": "creative",
+  "gateway": false,
+  "gateway-ip": "127.0.0.1",
+  "gateway-port": 59001,
+  "server-name": "Creative",
+  "server-ip": "127.0.0.1",
+  "server-port": 25566
+}
 ```
 
-#### Server 1
-
-```properties
-gateway=false
-gateway-ip=127.0.0.1
-gateway-port=59001
-reconnect-last-server=true
-server-ip=192.168.0.1
-server-name=server-1
-server-port=25566
-sync-chat=true
-sync-player-data=true
-sync-player-list=true
-sync-roles=true
-sync-whitelist=true
-whitelist-ip=false
-whitelisted-ip=
+`Survival 1`
+```json
+{
+  "group": "survival",
+  "gateway": false,
+  "gateway-ip": "127.0.0.1",
+  "gateway-port": 59001,
+  "server-name": "Survival 1",
+  "server-ip": "127.0.0.1",
+  "server-port": 25567
+}
 ```
 
-#### Server 2
-
-```properties
-gateway=false
-gateway-ip=127.0.0.1
-gateway-port=59001
-reconnect-last-server=true
-server-ip=192.168.0.1
-server-name=server-2
-server-port=25567
-sync-chat=true
-sync-player-data=true
-sync-player-list=true
-sync-roles=true
-sync-whitelist=true
-whitelist-ip=false
-whitelisted-ip=
+`Survival 2`
+```json
+{
+  "group": "survival",
+  "gateway": false,
+  "gateway-ip": "127.0.0.1",
+  "gateway-port": 59001,
+  "server-name": "Survival 2",
+  "server-ip": "127.0.0.1",
+  "server-port": 25568
+}
 ```
+
+Here is an example schema of this situation. You can find the configuration folder for each server [here](example).
+
+> [!IMPORTANT]  
+> The configuration files must be placed in the `config/servers-link` folder and the server IP addresses and ports must be the same as those specified in `info.json` files.
+
+![Schema](img\schema.png)
 
 ## Commands
 
