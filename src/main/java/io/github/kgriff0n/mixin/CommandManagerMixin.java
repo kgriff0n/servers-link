@@ -26,7 +26,6 @@ public class CommandManagerMixin {
             UUID uuid = null;
             if (player != null) uuid = player.getUuid();
             if (command.startsWith("server run ")) {
-                command = command.substring(11);
                 if (player != null) {
                     if (command.contains("@r")) {
                         player.sendMessage(Text.literal("Warning, using @r can cause desync between servers").formatted(Formatting.RED, Formatting.BOLD));

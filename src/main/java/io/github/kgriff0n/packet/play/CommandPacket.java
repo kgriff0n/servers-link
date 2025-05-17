@@ -1,5 +1,7 @@
 package io.github.kgriff0n.packet.play;
 
+import io.github.kgriff0n.ServersLink;
+import io.github.kgriff0n.command.ServerCommand;
 import io.github.kgriff0n.packet.Packet;
 import io.github.kgriff0n.api.ServersLinkApi;
 import io.github.kgriff0n.server.Settings;
@@ -37,24 +39,33 @@ public class CommandPacket implements Packet {
 
     @Override
     public void onReceive() {
-        if (uuid != null) {
-            ServerPlayerEntity player = ServersLinkApi.getDummyPlayer(uuid);
-            if (player != null) {
-                ServerCommandSource source = new ServerCommandSource(
-                        player.getCommandOutput(),
-                        player.getPos(),
-                        player.getRotationClient(),
-                        player.getWorld() instanceof ServerWorld ? (ServerWorld)player.getWorld() : null,
-                        SERVER.getPermissionLevel(player.getGameProfile()),
-                        "do-not-send-back",
-                        player.getDisplayName(),
-                        player.getWorld().getServer(),
-                        player
-                );
-                SERVER.getCommandManager().executeWithPrefix(source, command);
-            }
+        String cmd;
+        if (command.startsWith("server run ")) {
+            cmd = command.substring(11);
         } else {
-            ServerCommandSource source = new ServerCommandSource(
+            cmd = command;
+        }
+        ServerCommandSource source;
+
+        ServerPlayerEntity player = null;
+        if (uuid != null) {
+            player = ServersLinkApi.getDummyPlayer(uuid);
+        }
+
+        if (player != null) {
+            source = new ServerCommandSource(
+                    player.getCommandOutput(),
+                    player.getPos(),
+                    player.getRotationClient(),
+                    player.getWorld() instanceof ServerWorld ? (ServerWorld)player.getWorld() : null,
+                    SERVER.getPermissionLevel(player.getGameProfile()),
+                    "do-not-send-back",
+                    player.getDisplayName(),
+                    player.getWorld().getServer(),
+                    player
+            );
+        } else {
+            source = new ServerCommandSource(
                     SERVER,
                     SERVER.getOverworld() == null ? Vec3d.ZERO : Vec3d.of(SERVER.getOverworld().getSpawnPos()),
                     Vec2f.ZERO,
@@ -65,7 +76,7 @@ public class CommandPacket implements Packet {
                     SERVER,
                     null
             );
-            SERVER.getCommandManager().executeWithPrefix(source, command);
         }
+        SERVER.execute(() -> SERVER.getCommandManager().executeWithPrefix(source, cmd));
     }
 }
