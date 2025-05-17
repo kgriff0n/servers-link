@@ -31,7 +31,6 @@ public class PlayerDisconnect implements ServerPlayConnectionEvents.Disconnect {
             Gateway gateway = Gateway.getInstance();
             /* Delete player from list and send packet ONLY if the player is not transferred */
             if (!ServersLinkApi.getPreventDisconnect().contains(uuid)) {
-//                ServersLinkApi.getServer(ServersLink.getServerInfo().getName()).removePlayer(uuid);
                 gateway.sendAll(packet);
                 gateway.sendAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
             }
@@ -40,16 +39,6 @@ public class PlayerDisconnect implements ServerPlayConnectionEvents.Disconnect {
             /* Send packet ONLY if the player is not transferred */
             if (!ServersLinkApi.getPreventDisconnect().contains(uuid)) {
                 connection.send(packet);
-                /* Force inventory saving */
-//                SERVER.execute(() -> {
-//                    //FIXME don't force data save but detect post-disconnection
-//                    ((PlayerManagerInvoker) SERVER.getPlayerManager()).servers_link$savePlayerData(serverPlayNetworkHandler.player);
-//                    try {
-//                        connection.send(new PlayerDataPacket(uuid));
-//                    } catch (IOException e) {
-//                        ServersLink.LOGGER.error("Unable to send player data");
-//                    }
-//                });
             }
         }
     }

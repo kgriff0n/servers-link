@@ -1,6 +1,5 @@
 package io.github.kgriff0n.packet.play;
 
-import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.packet.Packet;
 import io.github.kgriff0n.packet.info.ServersInfoPacket;
 import io.github.kgriff0n.server.Settings;

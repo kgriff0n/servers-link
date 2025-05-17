@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.PropertyMap;
-import net.minecraft.client.data.PropertiesMap;
 
 import java.io.Serializable;
 import java.util.*;

@@ -3,7 +3,6 @@ package io.github.kgriff0n.packet.server;
 import com.google.gson.Gson;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.PropertyMap;
-import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.packet.Packet;
 import io.github.kgriff0n.packet.info.ServersInfoPacket;
 import io.github.kgriff0n.socket.Gateway;

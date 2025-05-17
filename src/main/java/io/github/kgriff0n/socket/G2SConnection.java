@@ -32,7 +32,6 @@ public class G2SConnection extends Thread {
     }
 
     public synchronized void send(Packet packet) {
-        ServersLink.LOGGER.info(packet.getClass().getName());
         try {
             out.writeObject(packet);
             out.flush();
@@ -52,6 +51,7 @@ public class G2SConnection extends Thread {
 
             while (IS_RUNNING) {
                 Packet packet = (Packet) in.readObject();
+                if (Gateway.getInstance().isDebugEnabled()) ServersLink.LOGGER.info("\u001B[95mPacket received {}", packet.getClass());
                 if (packet instanceof NewServerPacket pkt) {
                     this.server = pkt.getServer();
                     this.setName(String.format("%s thread", server.getName()));

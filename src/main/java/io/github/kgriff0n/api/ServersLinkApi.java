@@ -10,7 +10,6 @@ import io.github.kgriff0n.socket.Gateway;
 import io.github.kgriff0n.socket.G2SConnection;
 import io.github.kgriff0n.socket.SubServer;
 import io.github.kgriff0n.util.DummyPlayer;
-import io.github.kgriff0n.util.IPlayerServersLink;
 import io.github.kgriff0n.server.ServerInfo;
 import net.minecraft.network.packet.s2c.common.ServerTransferS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
@@ -201,46 +200,18 @@ public class ServersLinkApi {
      * @param serverName the name of the server to which the player will be transferred
      */
     public static void transferPlayer(ServerPlayerEntity player, String originServer, String serverName) {
-
-        /* Force inventory saving */
-//        ((PlayerManagerInvoker)SERVER.getPlayerManager()).servers_link$savePlayerData(player);
-
         ServerInfo server = ServersLinkApi.getServer(serverName);
 
         if (ServersLink.isGateway) {
-            Gateway gateway = Gateway.getInstance();
-            /* remove player from list */
-//            ServersLinkApi.getServer(ServersLink.getServerInfo().getName()).removePlayer(player.getUuid());
-
             /* add player to other server list and send packet */
             PlayerTransferPacket transferPacket = new PlayerTransferPacket(player.getUuid(), serverName);
             transferPacket.onGatewayReceive(originServer);
-//            gateway.sendTo(new PlayerTransferPacket(player.getUuid()), serverName);
-//            Settings settings = Gateway.getInstance().getSettings(ServersLinkApi.getServer(ServersLink.getServerInfo().getName()).getGroupId(), ServersLinkApi.getServer(serverName).getGroupId());
-//            if (settings.isPlayerDataSynced()) {
-//                SERVER.execute(() -> {
-//                    try {
-//                        gateway.sendTo(new PlayerDataPacket(player.getUuid(), serverName), serverName);
-//                    } catch (IOException e) {
-//                        ServersLink.LOGGER.error("Unable to read player data");
-//                    }
-//                });
-//            }
         } else {
             /* send packet, add player to transferred list and transfer the player */
             SubServer connection = SubServer.getInstance();
             connection.send(new PlayerTransferPacket(player.getUuid(), serverName));
-//            SERVER.execute(() -> {
-//                try {
-//                    connection.send(new PlayerDataPacket(player.getUuid(), serverName));
-//                } catch (IOException e) {
-//                    ServersLink.LOGGER.error("Unable to read player data");
-//                }
-//            });
         }
 
-        /* prevent disconnect message */
-//        ServersLinkApi.getPreventDisconnect().add(player.getUuid());
         player.networkHandler.sendPacket(new ServerTransferS2CPacket(server.getIp(), server.getPort()));
         if (!player.isDisconnected()) {
             player.networkHandler.disconnect(Text.translatable("connect.transferring"));

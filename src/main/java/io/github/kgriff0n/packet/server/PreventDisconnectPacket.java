@@ -16,7 +16,6 @@ public class PreventDisconnectPacket implements Packet {
 
     @Override
     public void onReceive() {
-        ServersLink.LOGGER.info("Prevent disconnect for {}", uuid);
         ServersLinkApi.getPreventDisconnect().add(uuid);
     }
 }

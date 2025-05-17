@@ -17,7 +17,6 @@ public class PlayerDataSyncPacket implements Packet {
         for (ServerPlayerEntity player : SERVER.getPlayerManager().getPlayerList()) {
             if (!(player instanceof DummyPlayer)) {
                 SERVER.execute(() -> {
-                    LOGGER.info("Send data for {}", player.getNameForScoreboard());
                     try {
                         SubServer.getInstance().send(new PlayerDataPacket(player.getUuid()));
                     } catch (IOException e) {

@@ -30,7 +30,6 @@ public class PlayerTransferPacket implements Packet {
 
     @Override
     public void onReceive() {
-//        ServersLinkApi.getPreventConnect().add(this.uuid);
         if (!ServersLink.isGateway) {
             /* Sub-server receive the packet, add player to the waiting list to allow to connection */
             SubServer.getInstance().addWaitingPlayer(this.uuid);
@@ -39,7 +38,6 @@ public class PlayerTransferPacket implements Packet {
 
     @Override
     public void onGatewayReceive(String sender) {
-//        Packet.super.onGatewayReceive(sender);
         /* The player is sent to the hub, remove from the player list to allowed it to connect */
         /* Add player to transferred list, to block the join message */
         Gateway gateway = Gateway.getInstance();

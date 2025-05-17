@@ -1,9 +1,7 @@
 package io.github.kgriff0n.packet.info;
 
-import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.packet.Packet;
 import io.github.kgriff0n.api.ServersLinkApi;
-import io.github.kgriff0n.server.Settings;
 
 public class ServerStatusPacket implements Packet {
 

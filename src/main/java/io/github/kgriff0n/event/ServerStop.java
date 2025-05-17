@@ -1,19 +1,14 @@
 package io.github.kgriff0n.event;
 
 import io.github.kgriff0n.ServersLink;
-import io.github.kgriff0n.packet.server.PlayerDataPacket;
 import io.github.kgriff0n.packet.info.ServerStatusPacket;
 import io.github.kgriff0n.packet.server.PlayerDataSyncPacket;
 import io.github.kgriff0n.packet.server.ServerStopPacket;
 import io.github.kgriff0n.socket.Gateway;
 import io.github.kgriff0n.socket.SubServer;
-import io.github.kgriff0n.util.DummyPlayer;
 import io.github.kgriff0n.api.ServersLinkApi;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-
-import java.io.IOException;
 
 import static io.github.kgriff0n.ServersLink.*;
 

@@ -27,6 +27,7 @@ public class Gateway extends Thread {
     private HashMap<String, Group> groups;
     private ServerSocket serverSocket;
 
+    private boolean debug;
     private boolean whitelistIp;
     private final List<String> whitelistedIp = new ArrayList<>();
     private boolean reconnectLastServer;
@@ -55,41 +56,30 @@ public class Gateway extends Thread {
             if (sub != null) sub.send(packet);
         }
     }
-//
+
     public void sendTo(Packet packet, String serverName) {
         if (serverName.equals(ServersLink.getServerInfo().getName())) {
             packet.onReceive();
         } else {
-            ServersLink.LOGGER.info(serverName);
             for (ServerInfo server : ServersLinkApi.getServerList()) {
-                ServersLink.LOGGER.info(server.toString());
                 if (server.getName().equals(serverName)) {
                     ServersLinkApi.getServerMap().get(server).send(packet);
                 }
             }
         }
     }
-//
-//    public void sendExcept(Packet packet, String serverName) {
-//        for (ServerInfo server : ServersLinkApi.getServerList()) {
-//            if (!server.getName().equals(serverName)) {
-//                G2SConnection sub = ServersLinkApi.getServerMap().get(server);
-//                if (sub != null) sub.send(packet);
-//            }
-//        }
-//    }
 
     public void forward(Packet packet, String sourceServer) {
         String sourceGroup = ServersLinkApi.getServer(sourceServer).getGroupId();
         for (ServerInfo server : ServersLinkApi.getServerList()) {
             G2SConnection sub = ServersLinkApi.getServerMap().get(server);
             if (sub != null && !server.getName().equals(sourceServer)) {
-                ServersLink.LOGGER.warn("Forward packet {} to {}?", packet.getClass().getName(), server.getName());
+                if (isDebugEnabled()) ServersLink.LOGGER.info("\u001B[33mForward packet {} to {}?", packet.getClass().getName(), server.getName());
                 if (packet.shouldReceive(getSettings(sourceGroup, server.getGroupId()))) {
-                    ServersLink.LOGGER.error("Yes");
+                    if (isDebugEnabled()) ServersLink.LOGGER.info("\u001B[32mYes");
                     sub.send(packet);
                 } else {
-                    ServersLink.LOGGER.error("No");
+                    if (isDebugEnabled()) ServersLink.LOGGER.info("\u001B[31mNo");
                 }
             }
         }
@@ -131,6 +121,7 @@ public class Gateway extends Thread {
             String jsonContent = Files.readString(path);
             Gson gson = new Gson();
             JsonObject jsonObject = gson.fromJson(jsonContent, JsonObject.class);
+            debug = jsonObject.get("debug").getAsBoolean();
             whitelistIp = jsonObject.get("whitelist_ip").getAsBoolean();
             for (JsonElement element : jsonObject.getAsJsonArray("whitelisted_ip")) {
                 whitelistedIp.add(element.getAsString());
@@ -139,6 +130,10 @@ public class Gateway extends Thread {
         } catch (IOException e) {
             ServersLink.LOGGER.error("Unable to read config.json");
         }
+    }
+
+    public boolean isDebugEnabled() {
+        return debug;
     }
 
     public boolean hasWhitelistIp() {

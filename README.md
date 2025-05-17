@@ -62,6 +62,7 @@ If the server is your gateway, you must add another file named `config.json`. Th
 
 | Option                | Description                                                                                      |        Value         |
 |-----------------------|--------------------------------------------------------------------------------------------------|:--------------------:|
+| debug                 | Enables debug messages to be displayed in the console                                            |     True / False     |
 | whitelist_ip          | Set to true if you don't want all IPs to be able to connect to the hub.                          |     True / False     |
 | whitelisted_ip        | A list of allowed IPs (eg: ["192.168.0.1","192.168.0.2"]).                                       | List of IP Addresses |
 | reconnect_last_server | Indicates whether players should be reconnected to the last server from which they disconnected. |     True / False     |
@@ -69,6 +70,7 @@ If the server is your gateway, you must add another file named `config.json`. Th
 Here is an example file:
 ```json
 {
+  "debug": false,
   "whitelist_ip": false,
   "whitelisted_ip": [],
   "reconnect_last_server": true
@@ -174,7 +176,7 @@ And these are the `info.json` files for each server:
   "gateway": false,
   "gateway-ip": "127.0.0.1",
   "gateway-port": 59001,
-  "server-name": "Survival 1",
+  "server-name": "Survival-1",
   "server-ip": "127.0.0.1",
   "server-port": 25567
 }
@@ -187,7 +189,7 @@ And these are the `info.json` files for each server:
   "gateway": false,
   "gateway-ip": "127.0.0.1",
   "gateway-port": 59001,
-  "server-name": "Survival 2",
+  "server-name": "Survival-2",
   "server-ip": "127.0.0.1",
   "server-port": 25568
 }

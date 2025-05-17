@@ -42,9 +42,6 @@ public class PlayerJoin implements ServerPlayConnectionEvents.Join {
                 ServersLinkApi.getPreventConnect().add(newPlayer.getUuid());
                 ServersLinkApi.getPreventDisconnect().add(newPlayer.getUuid());
             } else {
-
-//                String lastServer = ((IPlayerServersLink) newPlayer).servers_link$getLastServer();
-//                String nextServer = ((IPlayerServersLink) newPlayer).servers_link$getNextServer();
                 String lastServer = PlayersInformation.getLastServer(newPlayer.getUuid());
                 ServerInfo lastServerInfo = ServersLinkApi.getServer(lastServer);
                 if (lastServer == null || lastServer.equals(ServersLink.getServerInfo().getName())
