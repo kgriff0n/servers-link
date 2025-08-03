@@ -4,7 +4,6 @@ import io.github.kgriff0n.util.IPlayerServersLink;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtDouble;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
@@ -38,14 +37,18 @@ public class PlayerEntityMixin implements IPlayerServersLink {
 
     @Inject(at = @At("HEAD"), method = "readCustomDataFromNbt")
     private void readNbt(NbtCompound nbt, CallbackInfo ci) {
-        NbtCompound serversLink = nbt.getCompound("ServersLink");
-        this.serversPos = new HashMap<>();
-        NbtCompound nbtServersPos = serversLink.getCompound("Pos");
-        for (String server : nbtServersPos.getKeys()) {
-            NbtList position = nbtServersPos.getList(server, NbtElement.DOUBLE_TYPE);
-            Vec3d pos = new Vec3d(position.getDouble(0), position.getDouble(1), position.getDouble(2));
-            serversPos.put(server, pos);
-        }
+        nbt.getCompound("ServersLink").ifPresent(serversLink -> {
+            this.serversPos = new HashMap<>();
+            serversLink.getCompound("Pos").ifPresent(nbtServersPos -> {
+                for (String server : nbtServersPos.getKeys()) {
+                    nbtServersPos.getList(server).ifPresent(position ->
+                            position.getDouble(0).ifPresent(x ->
+                                    position.getDouble(1).ifPresent(y ->
+                                            position.getDouble(2).ifPresent(z ->
+                                                    serversPos.put(server, new Vec3d(x, y, z))))));
+                }
+            });
+        });
     }
 
     @Override

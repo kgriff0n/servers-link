@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.util.*;
 
 import static io.github.kgriff0n.ServersLink.IS_RUNNING;
+import static io.github.kgriff0n.ServersLink.SERVER;
 
 public class Gateway extends Thread {
 
@@ -59,7 +60,7 @@ public class Gateway extends Thread {
 
     public void sendTo(Packet packet, String serverName) {
         if (serverName.equals(ServersLink.getServerInfo().getName())) {
-            packet.onReceive();
+            SERVER.execute(packet::onReceive);
         } else {
             for (ServerInfo server : ServersLinkApi.getServerList()) {
                 if (server.getName().equals(serverName)) {

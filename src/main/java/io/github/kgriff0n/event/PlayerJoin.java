@@ -38,7 +38,7 @@ public class PlayerJoin implements ServerPlayConnectionEvents.Join {
         if (ServersLink.isGateway) {
             Gateway gateway = Gateway.getInstance();
             if (gateway.isConnectedPlayer(newPlayer.getUuid()) && !ServersLinkApi.getPreventConnect().contains(newPlayer.getUuid())) {
-                serverPlayNetworkHandler.disconnect(Text.translatable("multiplayer.status.cannot_connect").formatted(Formatting.RED));
+                ServersLinkApi.transferPlayer(newPlayer, ServersLink.getServerInfo().getName(), ServersLinkApi.whereIs(newPlayer.getUuid()));
                 ServersLinkApi.getPreventConnect().add(newPlayer.getUuid());
                 ServersLinkApi.getPreventDisconnect().add(newPlayer.getUuid());
             } else {

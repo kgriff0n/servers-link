@@ -9,6 +9,8 @@ import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static io.github.kgriff0n.ServersLink.IS_RUNNING;
 import static io.github.kgriff0n.ServersLink.SERVER;
@@ -16,6 +18,8 @@ import static io.github.kgriff0n.ServersLink.SERVER;
 public class SubServer extends Thread {
 
     private static SubServer connection;
+
+    private ExecutorService executor;
 
     /** List of player UUIDs that can connect */
     private ArrayList<UUID> waitingPlayers;
@@ -43,19 +47,22 @@ public class SubServer extends Thread {
                 ServersLink.LOGGER.error("Unable to establish connection");
             }
             connection = this;
+            executor  = Executors.newSingleThreadExecutor();
         } else {
             ServersLink.LOGGER.error("Connection already established");
         }
     }
 
     public synchronized void send(Packet packet) {
-        try {
-            out.writeObject(packet);
-            out.flush();
-            out.reset();
-        } catch (IOException e) {
-            ServersLink.LOGGER.error("Unable to send packet");
-        }
+        executor.submit(() -> {
+            try {
+                out.writeObject(packet);
+                out.flush();
+                out.reset();
+            } catch (IOException e) {
+                ServersLink.LOGGER.error("Unable to send {}", packet.getClass().getName());
+            }
+        });
     }
 
     public ArrayList<UUID> getWaitingPlayers() {
@@ -77,13 +84,14 @@ public class SubServer extends Thread {
             send(new ServerStatusPacket(ServersLink.getServerInfo().getName(), 20.0f, false));
             while (IS_RUNNING) {
                 try {
-                    ((Packet)in.readObject()).onReceive();
+                    Packet pkt = ((Packet)in.readObject());
+                    SERVER.execute(pkt::onReceive);
                 } catch (ClassNotFoundException e) {
                     ServersLink.LOGGER.error("Receive invalid data");
                 }
             }
         } catch (IOException e) {
-            ServersLink.LOGGER.error("Hub disconnected");
+            ServersLink.LOGGER.error("Gateway disconnected");
             SERVER.stop(true);
         }
     }

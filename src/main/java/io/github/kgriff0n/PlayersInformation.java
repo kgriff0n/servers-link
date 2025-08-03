@@ -1,16 +1,18 @@
 package io.github.kgriff0n;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.nbt.*;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.PersistentState;
-import net.minecraft.world.PersistentStateManager;
-import net.minecraft.world.World;
+import net.minecraft.util.WorldSavePath;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.UUID;
 
-public class PlayersInformation extends PersistentState {
+public class PlayersInformation {
 
     private static final HashMap<UUID, String> lastServer = new HashMap<>();
 
@@ -22,31 +24,36 @@ public class PlayersInformation extends PersistentState {
         return lastServer.get(player);
     }
 
-    @Override
-    public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+    public static void saveNbt(MinecraftServer server) {
+        NbtCompound nbt = new NbtCompound();
         lastServer.forEach((uuid, name) -> nbt.putString(uuid.toString(), name));
-        return nbt;
-    }
 
-    public static PlayersInformation createFromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        PlayersInformation state = new PlayersInformation();
-        for (String uuid : nbt.getKeys()) {
-            UUID player = UUID.fromString(uuid);
-            lastServer.put(player, nbt.getString(uuid));
+        Path dataFile = server
+                .getSavePath(WorldSavePath.ROOT)
+                .resolve("data")
+                .resolve("servers_link.nbt");
+
+        try (OutputStream os = Files.newOutputStream(dataFile)) {
+            NbtIo.writeCompressed(nbt, os);
+        } catch (IOException e) {
+            ServersLink.LOGGER.error("Unable to save data");
         }
-        return state;
     }
 
-    private static final Type<PlayersInformation> type = new Type<>(
-            PlayersInformation::new, // If there's no 'StateSaverAndLoader' yet create one
-            PlayersInformation::createFromNbt, // If there is a 'StateSaverAndLoader' NBT, parse it with 'createFromNbt'
-            null // Supposed to be an 'DataFixTypes' enum, but we can just pass null
-    );
+    public static void loadNbt(MinecraftServer server) {
+        Path dataFile = server
+                .getSavePath(WorldSavePath.ROOT)
+                .resolve("data")
+                .resolve("servers_link.nbt");
 
-    public static PlayersInformation loadPlayersInfo(MinecraftServer server) {
-        PersistentStateManager persistentStateManager = server.getWorld(World.OVERWORLD).getPersistentStateManager();
-        PlayersInformation state = persistentStateManager.getOrCreate(type, ServersLink.MOD_ID);
-        state.markDirty();
-        return state;
+        try (InputStream is = Files.newInputStream(dataFile)) {
+            NbtCompound nbt = NbtIo.readCompressed(is, NbtSizeTracker.ofUnlimitedBytes());
+            for (String uuid : nbt.getKeys()) {
+                UUID player = UUID.fromString(uuid);
+                nbt.getString(uuid).ifPresent(string -> lastServer.put(player, string));
+            }
+        } catch (IOException e) {
+            ServersLink.LOGGER.error("Unable to load data");
+        }
     }
 }

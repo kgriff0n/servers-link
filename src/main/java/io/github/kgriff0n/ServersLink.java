@@ -43,9 +43,10 @@ public class ServersLink implements ModInitializer {
 
 		ServerLifecycleEvents.SERVER_STARTED.register(new ServerStart());
 		ServerLifecycleEvents.SERVER_STOPPING.register(new ServerStop());
+		ServerPlayConnectionEvents.INIT.register(new PlayerInit());
 		ServerPlayConnectionEvents.JOIN.register(new PlayerJoin());
 		ServerPlayConnectionEvents.DISCONNECT.register(new PlayerDisconnect());
-		ServerTickEvents.START_SERVER_TICK.register(new ServerTick());
+		ServerTickEvents.START_WORLD_TICK.register(new ServerTick());
     }
 
 	public static ServerInfo getServerInfo() {

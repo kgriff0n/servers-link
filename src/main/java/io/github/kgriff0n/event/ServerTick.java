@@ -7,20 +7,20 @@ import io.github.kgriff0n.socket.Gateway;
 import io.github.kgriff0n.socket.SubServer;
 import io.github.kgriff0n.api.ServersLinkApi;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerWorld;
 
-public class ServerTick implements ServerTickEvents.StartTick {
+public class ServerTick implements ServerTickEvents.StartWorldTick {
 
     private static int count = 0;
 
     @Override
-    public void onStartTick(MinecraftServer minecraftServer) {
+    public void onStartTick(ServerWorld serverWorld) {
         count++;
         if (count >= 600) { // every 30s
             count = 0;
-            float tps = minecraftServer.getTickManager().getTickRate();
+            float tps = serverWorld.getServer().getTickManager().getTickRate();
             /* update self */
-            ServersLinkApi.getServer(ServersLink.getServerInfo().getName()).setTps(tps);
+            ServersLink.getServerInfo().setTps(tps);
             if (ServersLink.isGateway) {
                 Gateway.getInstance().sendAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
             } else {

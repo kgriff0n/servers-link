@@ -2,6 +2,7 @@ package io.github.kgriff0n.packet.info;
 
 import io.github.kgriff0n.packet.Packet;
 import io.github.kgriff0n.api.ServersLinkApi;
+import io.github.kgriff0n.server.ServerInfo;
 
 public class ServerStatusPacket implements Packet {
 
@@ -17,7 +18,10 @@ public class ServerStatusPacket implements Packet {
 
     @Override
     public void onReceive() {
-        ServersLinkApi.getServer(serverName).setTps(tps);
-        ServersLinkApi.getServer(serverName).setDown(down);
+        ServerInfo serverInfo = ServersLinkApi.getServer(serverName);
+        if (serverInfo != null) {
+            serverInfo.setTps(tps);
+            serverInfo.setDown(down);
+        }
     }
 }

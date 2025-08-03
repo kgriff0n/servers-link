@@ -20,7 +20,7 @@ public class ServerStart implements ServerLifecycleEvents.ServerStarted {
             ServersLink.SERVER = minecraftServer;
             if (ServersLink.isGateway) {
                 // Players information
-                PlayersInformation.loadPlayersInfo(minecraftServer);
+                PlayersInformation.loadNbt(minecraftServer);
 
                 Gateway gateway = new Gateway(ServersLink.getGatewayPort());
                 gateway.loadConfig();

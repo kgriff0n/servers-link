@@ -1,7 +1,5 @@
 package io.github.kgriff0n.packet.play;
 
-import io.github.kgriff0n.ServersLink;
-import io.github.kgriff0n.command.ServerCommand;
 import io.github.kgriff0n.packet.Packet;
 import io.github.kgriff0n.api.ServersLinkApi;
 import io.github.kgriff0n.server.Settings;
@@ -77,6 +75,6 @@ public class CommandPacket implements Packet {
                     null
             );
         }
-        SERVER.execute(() -> SERVER.getCommandManager().executeWithPrefix(source, cmd));
+        SERVER.getCommandManager().executeWithPrefix(source, cmd);
     }
 }

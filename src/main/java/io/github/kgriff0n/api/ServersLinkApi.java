@@ -64,6 +64,20 @@ public class ServersLinkApi {
     }
 
     /**
+     * @param groupId id of the group
+     * @return the list of server from a specified group
+     */
+    public static ArrayList<ServerInfo> getServers(String groupId) {
+        ArrayList<ServerInfo> list = new ArrayList<>();
+        for (ServerInfo server : serverList.keySet()) {
+            if (server.getGroupId().equals(groupId)) {
+                list.add(server);
+            }
+        }
+        return list;
+    }
+
+    /**
      * @param serverName the name of the server
      * @return the server with this name
      */
@@ -82,8 +96,10 @@ public class ServersLinkApi {
      * @param connection used from the hub for packet transfer
      */
     public static void addServer(ServerInfo server, @Nullable G2SConnection connection) {
-        serverList.remove(server); // remove old one
-        serverList.put(server, connection);
+        SERVER.execute(() -> {
+            serverList.remove(server); // remove old one
+            serverList.put(server, connection);
+        });
     }
 
     /**
@@ -92,15 +108,17 @@ public class ServersLinkApi {
      * @param server the server to be disconnected
      */
     public static void disconnectServer(ServerInfo server) {
-        Gateway gateway = Gateway.getInstance();
-        server.getPlayersList().forEach((uuid, name) -> {
-            gateway.sendAll(new PlayerDisconnectPacket(uuid));
-            SERVER.getPlayerManager().getPlayerList().removeIf(player -> player.getUuid().equals(uuid));
+        SERVER.execute(() -> {
+            Gateway gateway = Gateway.getInstance();
+            server.getPlayersList().forEach((uuid, name) -> {
+                gateway.sendAll(new PlayerDisconnectPacket(uuid));
+                SERVER.getPlayerManager().getPlayerList().removeIf(player -> player.getUuid().equals(uuid));
+            });
+            gateway.sendAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
+            server.getPlayersList().clear();
+            server.getGameProfile().clear();
+            serverList.put(server, null);
         });
-        gateway.sendAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
-        server.getPlayersList().clear();
-        server.getGameProfile().clear();
-        serverList.put(server, null);
     }
 
     /**
@@ -197,6 +215,7 @@ public class ServersLinkApi {
     /**
      * Transfers a player to another server.
      * @param player the player to transfer
+     * @param originServer name of the current server
      * @param serverName the name of the server to which the player will be transferred
      */
     public static void transferPlayer(ServerPlayerEntity player, String originServer, String serverName) {

@@ -15,6 +15,8 @@ import net.minecraft.util.Formatting;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static io.github.kgriff0n.ServersLink.IS_RUNNING;
 import static io.github.kgriff0n.ServersLink.SERVER;
@@ -23,22 +25,27 @@ public class G2SConnection extends Thread {
 
     private ServerInfo server;
 
+    private final ExecutorService executor;
+
     private final Socket socket;
     private ObjectInputStream in;
     private ObjectOutputStream out;
 
     public G2SConnection(Socket socket) {
         this.socket = socket;
+        this.executor  = Executors.newSingleThreadExecutor();
     }
 
     public synchronized void send(Packet packet) {
-        try {
-            out.writeObject(packet);
-            out.flush();
-            out.reset();
-        } catch (IOException e) {
-            ServersLink.LOGGER.error("Unable to send packet: {}", e.getMessage());
-        }
+        executor.submit(() -> {
+            try {
+                out.writeObject(packet);
+                out.flush();
+                out.reset();
+            } catch (IOException e) {
+                ServersLink.LOGGER.error("Unable to send {} - {}", packet.getClass().getName(), e.getMessage());
+            }
+        });
     }
 
     @Override
@@ -79,7 +86,7 @@ public class G2SConnection extends Thread {
                         }
                     }
                 }
-                packet.onGatewayReceive(server.getName());
+                SERVER.execute(() -> packet.onGatewayReceive(server.getName()));
             }
             socket.close();
         } catch (IOException e) {

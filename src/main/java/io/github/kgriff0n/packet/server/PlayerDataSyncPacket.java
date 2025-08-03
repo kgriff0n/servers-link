@@ -8,7 +8,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.io.IOException;
 
-import static io.github.kgriff0n.ServersLink.LOGGER;
 import static io.github.kgriff0n.ServersLink.SERVER;
 
 public class PlayerDataSyncPacket implements Packet {
@@ -16,13 +15,11 @@ public class PlayerDataSyncPacket implements Packet {
     public void onReceive() {
         for (ServerPlayerEntity player : SERVER.getPlayerManager().getPlayerList()) {
             if (!(player instanceof DummyPlayer)) {
-                SERVER.execute(() -> {
-                    try {
-                        SubServer.getInstance().send(new PlayerDataPacket(player.getUuid()));
-                    } catch (IOException e) {
-                        ServersLink.LOGGER.error("Unable to send player data for {}", player.getName());
-                    }
-                });
+                try {
+                    SubServer.getInstance().send(new PlayerDataPacket(player.getUuid()));
+                } catch (IOException e) {
+                    ServersLink.LOGGER.error("Unable to send player data for {}", player.getName());
+                }
             }
         }
     }
