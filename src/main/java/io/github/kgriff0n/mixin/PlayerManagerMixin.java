@@ -1,5 +1,6 @@
 package io.github.kgriff0n.mixin;
 
+import com.mojang.serialization.JsonOps;
 import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.packet.play.SystemChatPacket;
 import io.github.kgriff0n.packet.server.PlayerDataPacket;
@@ -10,6 +11,7 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextCodecs;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -19,8 +21,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.io.IOException;
-
-import static io.github.kgriff0n.ServersLink.SERVER;
 
 @Mixin(PlayerManager.class)
 public abstract class PlayerManagerMixin {
@@ -32,7 +32,7 @@ public abstract class PlayerManagerMixin {
 
     @Inject(at = @At("HEAD"), method = "broadcast(Lnet/minecraft/text/Text;Z)V")
     private void sendSystemPacket(Text message, boolean overlay, CallbackInfo ci) {
-        SystemChatPacket packet = new SystemChatPacket(Text.Serialization.toJsonString(message, SERVER.getRegistryManager()));
+        SystemChatPacket packet = new SystemChatPacket(TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, message).getOrThrow().toString());
         ServersLinkApi.send(packet, ServersLink.getServerInfo().getName());
     }
 

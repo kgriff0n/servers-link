@@ -1,10 +1,10 @@
 package io.github.kgriff0n.mixin;
 
+import com.mojang.serialization.Codec;
 import io.github.kgriff0n.util.IPlayerServersLink;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtDouble;
-import net.minecraft.nbt.NbtList;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -13,6 +13,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Mixin(PlayerEntity.class)
 public class PlayerEntityMixin implements IPlayerServersLink {
@@ -20,35 +22,37 @@ public class PlayerEntityMixin implements IPlayerServersLink {
     @Unique
     private HashMap<String, Vec3d> serversPos = new HashMap<>();
 
-    @Inject(at = @At("HEAD"), method = "writeCustomDataToNbt")
-    private void writeNbt(NbtCompound nbt, CallbackInfo ci) {
-        NbtCompound serversLink = new NbtCompound();
-        NbtCompound nbtServersPos = new NbtCompound();
-        serversPos.forEach((name, pos) -> {
-            NbtList position = new NbtList();
-            position.add(NbtDouble.of(pos.getX()));
-            position.add(NbtDouble.of(pos.getY()));
-            position.add(NbtDouble.of(pos.getZ()));
-            nbtServersPos.put(name, position);
-        });
-        serversLink.put("Pos", nbtServersPos);
-        nbt.put("ServersLink", serversLink);
+    @Inject(at = @At("HEAD"), method = "writeCustomData")
+    private void writeNbt(WriteView view, CallbackInfo ci) {
+        WriteView serversLink = view.get("ServersLink");
+        WriteView posView = serversLink.get("Pos");
+
+        for (Map.Entry<String, Vec3d> entry : serversPos.entrySet()) {
+            String name = entry.getKey();
+            Vec3d pos = entry.getValue();
+
+            WriteView.ListAppender<Double> appender = posView.getListAppender(name, Codec.DOUBLE);
+            appender.add(pos.getX());
+            appender.add(pos.getY());
+            appender.add(pos.getZ());
+        }
     }
 
-    @Inject(at = @At("HEAD"), method = "readCustomDataFromNbt")
-    private void readNbt(NbtCompound nbt, CallbackInfo ci) {
-        nbt.getCompound("ServersLink").ifPresent(serversLink -> {
-            this.serversPos = new HashMap<>();
-            serversLink.getCompound("Pos").ifPresent(nbtServersPos -> {
-                for (String server : nbtServersPos.getKeys()) {
-                    nbtServersPos.getList(server).ifPresent(position ->
-                            position.getDouble(0).ifPresent(x ->
-                                    position.getDouble(1).ifPresent(y ->
-                                            position.getDouble(2).ifPresent(z ->
-                                                    serversPos.put(server, new Vec3d(x, y, z))))));
-                }
+    @Inject(at = @At("HEAD"), method = "readCustomData")
+    private void readNbt(ReadView view, CallbackInfo ci) {
+        Codec<Map<String, List<Double>>> mapCodec =
+                Codec.unboundedMap(Codec.STRING, Codec.list(Codec.DOUBLE));
+
+        view.getOptionalReadView("ServersLink")
+            .flatMap(v -> v.read("Pos", mapCodec))
+            .ifPresent(posMap -> {
+                this.serversPos = new HashMap<>();
+                posMap.forEach((server, coords) -> {
+                    if (coords.size() >= 3) {
+                        serversPos.put(server, new Vec3d(coords.get(0), coords.get(1), coords.get(2)));
+                    }
+                });
             });
-        });
     }
 
     @Override

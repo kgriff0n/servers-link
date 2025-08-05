@@ -83,33 +83,39 @@ public class ServerCommand {
 
     private static int list(ServerCommandSource source) {
         ServerPlayerEntity player = source.getPlayer();
-        player.sendMessage(Text.literal("Server List").formatted(Formatting.BOLD, Formatting.DARK_GRAY));
+        if (player != null) {
+            player.sendMessage(Text.literal("Server List").formatted(Formatting.BOLD, Formatting.DARK_GRAY));
 
-        for (ServerInfo server : ServersLinkApi.getServerList()) {
-            MutableText status = Text.literal("●");
-            if (server.isDown()) {
-                status.formatted(Formatting.RED);
-            } else {
-                status.formatted(Formatting.GREEN);
+            for (ServerInfo server : ServersLinkApi.getServerList()) {
+                MutableText status = Text.literal("●");
+                if (server.isDown()) {
+                    status.formatted(Formatting.RED);
+                } else {
+                    status.formatted(Formatting.GREEN);
+                }
+
+                MutableText players = Text.literal(String.valueOf(server.getPlayersList().size())).formatted(Formatting.WHITE);
+
+                MutableText tps = Text.literal(String.format(Locale.ENGLISH, "%.1f", server.getTps()));
+                if (server.getTps() > 15) {
+                    tps.formatted(Formatting.GREEN);
+                } else if (server.getTps() > 10) {
+                    tps.formatted(Formatting.YELLOW);
+                } else if (server.getTps() > 0) {
+                    tps.formatted(Formatting.RED);
+                } else {
+                    tps.formatted(Formatting.DARK_RED);
+                }
+                player.sendMessage(
+                        Text.literal("[").append(status).append("] " + server.getName())
+                                .append(" | ").append(players).append(" player(s)")
+                                .append(" (").append(tps).append(" TPS)")
+                                .formatted(Formatting.GRAY));
             }
-
-            MutableText players = Text.literal(String.valueOf(server.getPlayersList().size())).formatted(Formatting.WHITE);
-
-            MutableText tps = Text.literal(String.format(Locale.ENGLISH, "%.1f", server.getTps()));
-            if (server.getTps() > 15) {
-                tps.formatted(Formatting.GREEN);
-            } else if (server.getTps() > 10) {
-                tps.formatted(Formatting.YELLOW);
-            } else if (server.getTps() > 0) {
-                tps.formatted(Formatting.RED);
-            } else {
-                tps.formatted(Formatting.DARK_RED);
+        } else {
+            for (ServerInfo server : ServersLinkApi.getServerList()) {
+                ServersLink.LOGGER.info("{} | {} | {} TPS | {} players", server.getName(), server.isDown() ? "Closed" : "Running", server.getTps(), server.getPlayersList().size());
             }
-            player.sendMessage(
-                    Text.literal("[").append(status).append("] " + server.getName())
-                            .append(" | ").append(players).append(" player(s)")
-                            .append(" (").append(tps).append(" TPS)")
-                            .formatted(Formatting.GRAY));
         }
 
         return Command.SINGLE_SUCCESS;
@@ -139,7 +145,11 @@ public class ServerCommand {
 
     private static int whereis(ServerCommandSource source, ServerPlayerEntity player) {
         ServerPlayerEntity sender = source.getPlayer();
-        sender.sendMessage(Text.literal(player.getName().getString() + " is on " + ServersLinkApi.whereIs(player.getUuid())));
+        if (sender != null) {
+            sender.sendMessage(Text.literal(player.getName().getString() + " is on " + ServersLinkApi.whereIs(player.getUuid())));
+        } else {
+            ServersLink.LOGGER.info("{} is on {}", player.getName().getString(), ServersLinkApi.whereIs(player.getUuid()));
+        }
         return Command.SINGLE_SUCCESS;
     }
 
@@ -148,7 +158,7 @@ public class ServerCommand {
         String server = ServersLinkApi.whereIs(player.getUuid());
         if (sender == null) return 0;
         if (server.equals(ServersLink.getServerInfo().getName())) {
-            sender.teleport(player.getServerWorld(), player.getX(), player.getY(), player.getZ(), EnumSet.noneOf(PositionFlag.class), player.getYaw(), player.getPitch(), false);
+            sender.teleport(player.getWorld(), player.getX(), player.getY(), player.getZ(), EnumSet.noneOf(PositionFlag.class), player.getYaw(), player.getPitch(), false);
         } else {
             TeleportationRequestPacket request = new TeleportationRequestPacket(player.getUuid(), sender.getUuid(), ServersLink.getServerInfo().getName(), server);
             if (ServersLink.isGateway) {
@@ -165,7 +175,7 @@ public class ServerCommand {
         String server = ServersLinkApi.whereIs(player.getUuid());
         if (sender == null) return 0;
         if (server.equals(ServersLink.getServerInfo().getName())) {
-            player.teleport(sender.getServerWorld(), sender.getX(), sender.getY(), sender.getZ(), EnumSet.noneOf(PositionFlag.class), sender.getYaw(), sender.getPitch(), false);
+            player.teleport(sender.getWorld(), sender.getX(), sender.getY(), sender.getZ(), EnumSet.noneOf(PositionFlag.class), sender.getYaw(), sender.getPitch(), false);
         } else {
             TeleportationAcceptPacket accept = new TeleportationAcceptPacket(sender.getX(), sender.getY(), sender.getZ(), player.getUuid(), server, ServersLink.getServerInfo().getName());
             if (ServersLink.isGateway) {
