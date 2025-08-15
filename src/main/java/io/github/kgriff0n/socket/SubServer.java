@@ -54,15 +54,19 @@ public class SubServer extends Thread {
     }
 
     public synchronized void send(Packet packet) {
-        executor.submit(() -> {
-            try {
-                out.writeObject(packet);
-                out.flush();
-                out.reset();
-            } catch (IOException e) {
-                ServersLink.LOGGER.error("Unable to send {}", packet.getClass().getName());
-            }
-        });
+        if (executor.isShutdown()) {
+            ServersLink.LOGGER.warn("Can't send {}", packet.getClass().getName());
+        } else {
+            executor.submit(() -> {
+                try {
+                    out.writeObject(packet);
+                    out.flush();
+                    out.reset();
+                } catch (IOException e) {
+                    ServersLink.LOGGER.error("Unable to send {}", packet.getClass().getName());
+                }
+            });
+        }
     }
 
     public ArrayList<UUID> getWaitingPlayers() {
@@ -96,4 +100,9 @@ public class SubServer extends Thread {
         }
     }
 
+    @Override
+    public void interrupt() {
+        super.interrupt();
+        executor.shutdown();
+    }
 }

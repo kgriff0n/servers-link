@@ -13,7 +13,9 @@ import net.minecraft.server.MinecraftServer;
 
 import static io.github.kgriff0n.ServersLink.*;
 
-public class ServerStop implements ServerLifecycleEvents.ServerStopping {
+public class ServerStopping implements ServerLifecycleEvents.ServerStopping {
+
+    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public void onServerStopping(MinecraftServer server) {
         if (!CONFIG_ERROR) {
@@ -30,10 +32,10 @@ public class ServerStop implements ServerLifecycleEvents.ServerStopping {
                 while (ServersLinkApi.getRunningSubServers() > 0);
                 IS_RUNNING = false;
                 PlayersInformation.saveNbt(server);
-                Gateway.getInstance().interrupt();
             } else {
                 /* Confirm shutdown */
-                SubServer.getInstance().send(new ServerStatusPacket(ServersLink.getServerInfo().getName(), 0.0f, true));
+                SubServer subServer = SubServer.getInstance();
+                subServer.send(new ServerStatusPacket(ServersLink.getServerInfo().getName(), 0.0f, true));
             }
         }
     }

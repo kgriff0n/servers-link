@@ -19,8 +19,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Vec3d;
 
-import static io.github.kgriff0n.ServersLink.SERVER;
-
 public class PlayerJoin implements ServerPlayConnectionEvents.Join {
 
     @Override
@@ -48,7 +46,7 @@ public class PlayerJoin implements ServerPlayConnectionEvents.Join {
                         || lastServerInfo == null || lastServerInfo.isDown() || !gateway.shouldReconnectToLastServer()) {
                     ServersLinkApi.getServer(ServersLink.getServerInfo().getName()).addPlayer(newPlayer.getGameProfile());
                     /* Delete the fake player */
-                    SERVER.getPlayerManager().getPlayerList().removeIf(player -> player.getName().equals(newPlayer.getName()));
+                    ServersLinkApi.getDummyPlayers().removeIf(player -> player.getName().equals(newPlayer.getName()));
 
                     /* Send player information to other servers */
                     gateway.forward(dummyPlayer, ServersLink.getServerInfo().getName());
@@ -72,7 +70,7 @@ public class PlayerJoin implements ServerPlayConnectionEvents.Join {
                 /* The player logs in and is removed from the list of waiting players */
                 connection.removeWaitingPlayer(newPlayer.getUuid());
                 /* Delete the fake player */
-                SERVER.getPlayerManager().getPlayerList().removeIf(player -> player.getName().equals(newPlayer.getName()));
+                ServersLinkApi.getDummyPlayers().removeIf(player -> player.getName().equals(newPlayer.getName()));
                 /* Send player information to other servers */
                 connection.send(dummyPlayer);
                 connection.send(new PlayerAcknowledgementPacket(ServersLink.getServerInfo().getName(), newPlayer.getGameProfile()));

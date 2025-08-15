@@ -2,6 +2,7 @@ package io.github.kgriff0n.api;
 
 import com.mojang.authlib.GameProfile;
 import io.github.kgriff0n.ServersLink;
+import io.github.kgriff0n.event.ServerTick;
 import io.github.kgriff0n.packet.Packet;
 import io.github.kgriff0n.packet.info.ServersInfoPacket;
 import io.github.kgriff0n.packet.play.PlayerDisconnectPacket;
@@ -27,6 +28,8 @@ public class ServersLinkApi {
 
     private static final HashSet<UUID> preventConnect = new HashSet<>();
     private static final HashSet<UUID> preventDisconnect = new HashSet<>();
+
+    public static List<DummyPlayer> dummyPlayers = new ArrayList<>();
 
     public static HashSet<UUID> getPreventConnect() {
         return preventConnect;
@@ -112,7 +115,7 @@ public class ServersLinkApi {
             Gateway gateway = Gateway.getInstance();
             server.getPlayersList().forEach((uuid, name) -> {
                 gateway.sendAll(new PlayerDisconnectPacket(uuid));
-                SERVER.getPlayerManager().getPlayerList().removeIf(player -> player.getUuid().equals(uuid));
+                dummyPlayers.removeIf(player -> player.getUuid().equals(uuid));
             });
             gateway.sendAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
             server.getPlayersList().clear();
@@ -184,20 +187,27 @@ public class ServersLinkApi {
         List<ServerPlayerEntity> playerList = SERVER.getPlayerManager().getPlayerList();
 
         boolean alreadyPresent = false;
-        for (ServerPlayerEntity player : playerList) {
+        for (DummyPlayer player : dummyPlayers) {
             if (player.getUuid().equals(profile.getId())) {
                 alreadyPresent = true;
             }
         }
 
         if (!alreadyPresent) {
-            playerList.add(new DummyPlayer(profile));
+            dummyPlayers.add(new DummyPlayer(profile));
 
             /* Update player list for all players */
+            List<ServerPlayerEntity> allPlayers = new ArrayList<>();
+            allPlayers.addAll(playerList);
+            allPlayers.addAll(dummyPlayers);
             for (ServerPlayerEntity player : playerList) {
-                player.networkHandler.sendPacket(PlayerListS2CPacket.entryFromPlayer(playerList));
+                player.networkHandler.sendPacket(PlayerListS2CPacket.entryFromPlayer(allPlayers));
             }
         }
+    }
+
+    public static List<DummyPlayer> getDummyPlayers() {
+        return dummyPlayers;
     }
 
     /**
@@ -206,8 +216,20 @@ public class ServersLinkApi {
      * @return the player with this UUID
      */
     public static ServerPlayerEntity getDummyPlayer(UUID uuid) {
-        for (ServerPlayerEntity player : SERVER.getPlayerManager().getPlayerList()) {
+        for (DummyPlayer player : dummyPlayers) {
             if (player.getUuid().equals(uuid)) return player;
+        }
+        return null;
+    }
+
+    /**
+     * Returns the player with the given username, used to retrieve dummy players.
+     * @param playerName the name of the player
+     * @return the player with this UUID
+     */
+    public static ServerPlayerEntity getDummyPlayer(String playerName) {
+        for (DummyPlayer player : dummyPlayers) {
+            if (player.getNameForScoreboard().equals(playerName)) return player;
         }
         return null;
     }
@@ -232,9 +254,7 @@ public class ServersLinkApi {
         }
 
         player.networkHandler.sendPacket(new ServerTransferS2CPacket(server.getIp(), server.getPort()));
-        if (!player.isDisconnected()) {
-            player.networkHandler.disconnect(Text.translatable("connect.transferring"));
-        }
+        ServerTick.scheduleDisconnect(player.getUuid(), 20); // delay
     }
 
 }

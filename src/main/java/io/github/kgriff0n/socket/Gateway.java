@@ -29,6 +29,7 @@ public class Gateway extends Thread {
     private ServerSocket serverSocket;
 
     private boolean debug;
+    private boolean globalPlayerCount;
     private boolean whitelistIp;
     private final List<String> whitelistedIp = new ArrayList<>();
     private boolean reconnectLastServer;
@@ -116,6 +117,10 @@ public class Gateway extends Thread {
         return groups.get(groupId);
     }
 
+    public Collection<Group> getGroups() {
+        return groups.values();
+    }
+
     public void loadConfig() {
         Path path = ServersLink.CONFIG.resolve("config.json");
         try {
@@ -123,6 +128,7 @@ public class Gateway extends Thread {
             Gson gson = new Gson();
             JsonObject jsonObject = gson.fromJson(jsonContent, JsonObject.class);
             debug = jsonObject.get("debug").getAsBoolean();
+            globalPlayerCount = jsonObject.get("global_player_count").getAsBoolean();
             whitelistIp = jsonObject.get("whitelist_ip").getAsBoolean();
             for (JsonElement element : jsonObject.getAsJsonArray("whitelisted_ip")) {
                 whitelistedIp.add(element.getAsString());
@@ -135,6 +141,10 @@ public class Gateway extends Thread {
 
     public boolean isDebugEnabled() {
         return debug;
+    }
+
+    public boolean isGlobalPlayerCountEnabled() {
+        return globalPlayerCount;
     }
 
     public boolean hasWhitelistIp() {
@@ -166,7 +176,7 @@ public class Gateway extends Thread {
                     global.get("whitelist").getAsBoolean(),
                     global.get("roles").getAsBoolean()
             );
-            groups.put("global", new Group(globalSettings));
+            groups.put("global", new Group("global", globalSettings));
             // Others
             for (Map.Entry<String, JsonElement> entry : jsonGroups.entrySet()) {
                 JsonObject otherGroup = entry.getValue().getAsJsonObject();
@@ -178,7 +188,7 @@ public class Gateway extends Thread {
                         otherGroup.has("roles") ? otherGroup.get("roles").getAsBoolean() : globalSettings.isRolesSynced()
                 );
                 if (!entry.getKey().equals("global")) { // Doesn't re-add global group
-                    groups.put(entry.getKey(), new Group(otherSettings));
+                    groups.put(entry.getKey(), new Group(entry.getKey(), otherSettings));
                 }
             }
 

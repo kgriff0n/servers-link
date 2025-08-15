@@ -8,7 +8,6 @@ import io.github.kgriff0n.api.ServersLinkApi;
 import net.minecraft.network.packet.s2c.play.PlayerRemoveS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,13 +30,11 @@ public class PlayerDisconnectPacket implements Packet {
     public void onReceive() {
         List<ServerPlayerEntity> playerList = SERVER.getPlayerManager().getPlayerList();
         /* Delete the fake player */
-        playerList.removeIf(player -> player.getUuid().equals(uuid));
+        ServersLinkApi.getDummyPlayers().removeIf(player -> player.getUuid().equals(uuid));
 
         /* Update player list for all players */
         for (ServerPlayerEntity player : playerList) {
-            List<UUID> list = new ArrayList<>();
-            list.add(uuid);
-            player.networkHandler.sendPacket(new PlayerRemoveS2CPacket(list));
+            player.networkHandler.sendPacket(new PlayerRemoveS2CPacket(List.of(uuid)));
         }
     }
 

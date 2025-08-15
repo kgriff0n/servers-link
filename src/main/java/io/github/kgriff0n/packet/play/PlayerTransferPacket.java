@@ -41,16 +41,20 @@ public class PlayerTransferPacket implements Packet {
         /* The player is sent to the hub, remove from the player list to allowed it to connect */
         /* Add player to transferred list, to block the join message */
         Gateway gateway = Gateway.getInstance();
+        Settings settings = gateway.getSettings(ServersLinkApi.getServer(sender).getGroupId(), ServersLinkApi.getServer(serverToTransfer).getGroupId());
         if (this.serverToTransfer.equals(ServersLink.getServerInfo().getName())) {
-            gateway.removePlayer(this.uuid);
-        } else { /* Redirect the packet to the other server, add the player to the player list of this server */
+            if (settings.isPlayerListSynced()) {
+                ServersLinkApi.getPreventConnect().add(uuid);
+                gateway.sendTo(new PreventDisconnectPacket(uuid), sender);
+            }
+        } else { /* Redirect the packet to the other server */
             gateway.sendTo(this, this.serverToTransfer);
-            Settings settings = gateway.getSettings(ServersLinkApi.getServer(sender).getGroupId(), ServersLinkApi.getServer(serverToTransfer).getGroupId());
             if (settings.isPlayerListSynced()) { // prevents messages if both servers have synchronized players
                 gateway.sendTo(new PreventConnectPacket(uuid), serverToTransfer);
                 gateway.sendTo(new PreventDisconnectPacket(uuid), sender);
             }
         }
+        gateway.removePlayer(this.uuid);
         /* Save last server */
         PlayersInformation.setLastServer(uuid, serverToTransfer);
     }

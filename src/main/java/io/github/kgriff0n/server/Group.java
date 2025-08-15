@@ -6,14 +6,20 @@ import java.util.List;
 
 public class Group {
 
+    private final String name;
     private final List<ServerInfo> serversList;
     private final Settings settings;
     private final HashMap<String, Settings> rules;
 
-    public Group(Settings settings) {
+    public Group(String name, Settings settings) {
+        this.name = name;
         this.serversList = new ArrayList<>();
         this.settings = settings;
         this.rules = new HashMap<>();
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     public void addServer(ServerInfo server) {

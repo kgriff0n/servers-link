@@ -4,6 +4,8 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "CommandManagerMixin",
+    "EntitySelectorMixin",
+    "MinecraftServerMixin",
     "PlayerEntityMixin",
     "PlayerManagerAccessor",
     "PlayerManagerMixin",

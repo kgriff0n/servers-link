@@ -83,6 +83,7 @@ public class ServerInfo implements Serializable {
 
     public void removePlayer(UUID uuid) {
         this.playersList.remove(uuid);
+        this.playersPropertiesList.remove(uuid);
     }
 
     public boolean isDown() {

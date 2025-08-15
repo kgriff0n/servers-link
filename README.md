@@ -60,17 +60,19 @@ Here is an example file:
 
 If the server is your gateway, you must add another file named `config.json`. This file contains the general configuration settings for the gateway.
 
-| Option                | Description                                                                                      |        Value         |
-|-----------------------|--------------------------------------------------------------------------------------------------|:--------------------:|
-| debug                 | Enables debug messages to be displayed in the console                                            |     True / False     |
-| whitelist_ip          | Set to true if you don't want all IPs to be able to connect to the hub.                          |     True / False     |
-| whitelisted_ip        | A list of allowed IPs (eg: ["192.168.0.1","192.168.0.2"]).                                       | List of IP Addresses |
-| reconnect_last_server | Indicates whether players should be reconnected to the last server from which they disconnected. |     True / False     |
+| Option                | Description                                                                                       |        Value         |
+|-----------------------|---------------------------------------------------------------------------------------------------|:--------------------:|
+| debug                 | Enables debug messages to be displayed in the console.                                            |     True / False     |
+| global_player_count   | Set to true if you want the gateway player count to be the sum of each sub-server's player count. |                      |
+| whitelist_ip          | Set to true if you don't want all IPs to be able to connect a server to the gateway.              |     True / False     |
+| whitelisted_ip        | A list of allowed IPs (eg: ["192.168.0.1","192.168.0.2"]).                                        | List of IP Addresses |
+| reconnect_last_server | Indicates whether players should be reconnected to the last server from which they disconnected.  |     True / False     |
 
 Here is an example file:
 ```json
 {
   "debug": false,
+  "global_player_count": true,
   "whitelist_ip": false,
   "whitelisted_ip": [],
   "reconnect_last_server": true

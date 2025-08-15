@@ -7,6 +7,7 @@ import io.github.kgriff0n.packet.play.TeleportationAcceptPacket;
 import io.github.kgriff0n.packet.play.TeleportationRequestPacket;
 import io.github.kgriff0n.socket.Gateway;
 import io.github.kgriff0n.socket.SubServer;
+import io.github.kgriff0n.util.DummyPlayer;
 import io.github.kgriff0n.util.IPlayerServersLink;
 import io.github.kgriff0n.api.ServersLinkApi;
 import io.github.kgriff0n.server.ServerInfo;
@@ -74,6 +75,10 @@ public class ServerCommand {
                         .then(argument("player", EntityArgumentType.player())
                                 .executes(context -> teleportHere(context.getSource(), EntityArgumentType.getPlayer(context, "player")))
                         )
+                )
+                .then(literal("dummyplayerlist")
+                        .requires(Permissions.require("server.dummyplayerlist", 2))
+                        .executes(context -> dummyPlayerList(context.getSource()))
                 )
                 .then(CommandManager.literal("run")
                         .requires(Permissions.require("server.run", 2))
@@ -184,6 +189,19 @@ public class ServerCommand {
                 SubServer.getInstance().send(accept);
             }
         }
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int dummyPlayerList(ServerCommandSource source) {
+        ServerPlayerEntity player = source.getPlayer();
+        for (DummyPlayer dummy : ServersLinkApi.getDummyPlayers()) {
+            if (player == null) {
+                ServersLink.LOGGER.info(dummy.getNameForScoreboard());
+            } else {
+                player.sendMessage(dummy.getName());
+            }
+        }
+
         return Command.SINGLE_SUCCESS;
     }
 }
