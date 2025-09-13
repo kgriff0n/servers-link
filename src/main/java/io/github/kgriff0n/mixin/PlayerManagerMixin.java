@@ -12,6 +12,7 @@ import net.minecraft.network.message.SentMessage;
 import net.minecraft.network.message.SignedMessage;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
+import net.minecraft.registry.RegistryOps;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -32,6 +33,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
+import static io.github.kgriff0n.ServersLink.SERVER;
+
 @Mixin(PlayerManager.class)
 public abstract class PlayerManagerMixin {
 
@@ -46,7 +49,7 @@ public abstract class PlayerManagerMixin {
 
     @Inject(at = @At("HEAD"), method = "broadcast(Lnet/minecraft/text/Text;Z)V")
     private void sendSystemPacket(Text message, boolean overlay, CallbackInfo ci) {
-        SystemChatPacket packet = new SystemChatPacket(TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, message).getOrThrow().toString());
+        SystemChatPacket packet = new SystemChatPacket(TextCodecs.CODEC.encodeStart(RegistryOps.of(JsonOps.INSTANCE, SERVER.getRegistryManager()), message).getOrThrow().toString());
         ServersLinkApi.send(packet, ServersLink.getServerInfo().getName());
     }
 

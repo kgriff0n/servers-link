@@ -4,6 +4,7 @@ import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import io.github.kgriff0n.packet.Packet;
 import io.github.kgriff0n.server.Settings;
+import net.minecraft.registry.RegistryOps;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.TextCodecs;
 
@@ -26,7 +27,7 @@ public class SystemChatPacket implements Packet {
     public void onReceive() {
         /* Send message */
         for (ServerPlayerEntity player : SERVER.getPlayerManager().getPlayerList()) {
-            player.sendMessage(TextCodecs.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString(serializedMessage)).getOrThrow());
+            player.sendMessage(TextCodecs.CODEC.parse(RegistryOps.of(JsonOps.INSTANCE, SERVER.getRegistryManager()), JsonParser.parseString(serializedMessage)).getOrThrow());
         }
     }
 }

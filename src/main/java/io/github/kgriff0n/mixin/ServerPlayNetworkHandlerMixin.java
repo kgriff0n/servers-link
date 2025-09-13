@@ -6,6 +6,7 @@ import io.github.kgriff0n.packet.play.PlayerChatPacket;
 import io.github.kgriff0n.api.ServersLinkApi;
 import net.minecraft.network.message.MessageType;
 import net.minecraft.network.message.SignedMessage;
+import net.minecraft.registry.RegistryOps;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -18,6 +19,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import static io.github.kgriff0n.ServersLink.SERVER;
+
 @Mixin(ServerPlayNetworkHandler.class)
 public abstract class ServerPlayNetworkHandlerMixin {
 
@@ -28,7 +31,7 @@ public abstract class ServerPlayNetworkHandlerMixin {
     @Inject(at = @At("HEAD"), method = "sendChatMessage")
     private void sendChatMessage(SignedMessage message, MessageType.Parameters params, CallbackInfo ci) {
         Text formattedMessage = params.applyChatDecoration(message.getContent());
-        PlayerChatPacket packet = new PlayerChatPacket(TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, formattedMessage).getOrThrow().toString(), this.getPlayer().getName().getString());
+        PlayerChatPacket packet = new PlayerChatPacket(TextCodecs.CODEC.encodeStart(RegistryOps.of(JsonOps.INSTANCE, SERVER.getRegistryManager()), formattedMessage).getOrThrow().toString(), this.getPlayer().getName().getString());
         ServersLinkApi.send(packet, ServersLink.getServerInfo().getName());
     }
 
