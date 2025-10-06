@@ -214,7 +214,7 @@ Here is an example schema of this situation. You can find the configuration fold
 
 ## Commands
 
-This mod adds the `server` command and the following sub-commands.
+This mod adds the `server` command (or the command specified in `info.json`) and the following sub-commands.
 
 |                 Sub-command                  | Description                                            |              Permissions |
 |:--------------------------------------------:|--------------------------------------------------------|-------------------------:|
