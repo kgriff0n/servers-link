@@ -31,15 +31,17 @@ accepts-transfers=true
 Next, open the `config` folder on your server and create a new folder named `servers-link`. Inside this folder, you must always have a file named `info.json`. This file is used to describe all the information related to the current server.
 The following options must be configured:
 
-| Option                | Description                                                                                                                                                               |    Value     |
-|-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------:|
-| group                 | The group in which the server will be located. Groups are explained in the next section.                                                                                  |    String    |
-| gateway               | If the server is the gateway or not. Only one of your servers can be the gateway.<br/>This is the server the players will use to connect.                                 | True / False |
-| gateway-ip            | This is not the IP used by players to connect, but the IP used to communicate between the servers.<br/>If all your servers are in local you can set this to  `127.0.0.1`. |  IP Address  |
-| gateway-port          | Same as above. If you want to connect servers located in another network, you must allow connections to this port.                                                        |     Port     |
-| server-name           | Name of the server (multiple servers can't have the same name).                                                                                                           |    String    |
-| server-ip             | IP of the Minecraft server.                                                                                                                                               |  IP Address  |
-| server-port           | Port of the Minecraft server.                                                                                                                                             |     Port     |
+| Option       | Description                                                                                                                                                               |    Value     |
+|--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------:|
+| group        | The group in which the server will be located. Groups are explained in the next section.                                                                                  |    String    |
+| gateway      | If the server is the gateway or not. Only one of your servers can be the gateway.<br/>This is the server the players will use to connect.                                 | True / False |
+| gateway-ip   | This is not the IP used by players to connect, but the IP used to communicate between the servers.<br/>If all your servers are in local you can set this to  `127.0.0.1`. |  IP Address  |
+| gateway-port | Same as above. If you want to connect servers located in another network, you must allow connections to this port.                                                        |     Port     |
+| server-name  | Name of the server (multiple servers can't have the same name).                                                                                                           |    String    |
+| server-ip    | IP of the Minecraft server.                                                                                                                                               |  IP Address  |
+| server-port  | Port of the Minecraft server.                                                                                                                                             |     Port     |
+| command-name | (optional) Name of the added command. If not specified defaults to /server.                                                                                               |    String    |
+
 
 Here is an example file:
 ```json 
@@ -50,11 +52,16 @@ Here is an example file:
   "gateway-port": 59001,
   "server-name": "Hub",
   "server-ip": "127.0.0.1",
-  "server-port": 25565
+  "server-port": 25565,
+  "command-name": "network"
 }
 ```
 
 > [!IMPORTANT]
+> All ports specified in `server-port` must remain open.  
+> When you stop the gateway server, all other servers are stopped.
+
+> [!TIPP]
 > All ports specified in `server-port` must remain open.  
 > When you stop the gateway server, all other servers are stopped.
 
