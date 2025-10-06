@@ -62,7 +62,7 @@ Here is an example file:
 > When you stop the gateway server, all other servers are stopped.
 
 > [!TIP]
-> To get Servers Link to work in a Velocity proxy setup, you need to set the `command-name` option in the `info.json` file to something else thas `server` (for example `network`).
+> To get Servers Link to work in a Velocity proxy setup, you need to set the `command-name` option in the `info.json` file to something other than `server` (for example, `network`).
 > 
 > This is because Velocity uses the `/server` command by default.
 
