@@ -40,8 +40,6 @@ The following options must be configured:
 | server-name  | Name of the server (multiple servers can't have the same name).                                                                                                           |    String    |
 | server-ip    | IP of the Minecraft server.                                                                                                                                               |  IP Address  |
 | server-port  | Port of the Minecraft server.                                                                                                                                             |     Port     |
-| command-name | (optional) Name of the added command. If not specified defaults to /server.                                                                                               |    String    |
-
 
 Here is an example file:
 ```json 
@@ -53,18 +51,12 @@ Here is an example file:
   "server-name": "Hub",
   "server-ip": "127.0.0.1",
   "server-port": 25565,
-  "command-name": "network"
 }
 ```
 
 > [!IMPORTANT]
 > All ports specified in `server-port` must remain open.  
 > When you stop the gateway server, all other servers are stopped.
-
-> [!TIP]
-> To get Servers Link to work in a Velocity proxy setup, you need to set the `command-name` option in the `info.json` file to something other than `server` (for example, `network`).
-> 
-> This is because Velocity uses the `/server` command by default.
 
 If the server is your gateway, you must add another file named `config.json`. This file contains the general configuration settings for the gateway.
 
@@ -214,7 +206,7 @@ Here is an example schema of this situation. You can find the configuration fold
 
 ## Commands
 
-This mod adds the `server` command (or the command specified in `info.json`) and the following sub-commands.
+This mod adds the `server` command and the following sub-commands.
 
 |                 Sub-command                  | Description                                            |              Permissions |
 |:--------------------------------------------:|--------------------------------------------------------|-------------------------:|

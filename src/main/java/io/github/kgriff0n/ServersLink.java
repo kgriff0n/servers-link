@@ -7,6 +7,7 @@ import io.github.kgriff0n.event.*;
 import io.github.kgriff0n.server.ServerInfo;
 import net.fabricmc.api.ModInitializer;
 
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -27,7 +28,6 @@ public class ServersLink implements ModInitializer {
 	private static ServerInfo serverInfo;
 	private static String gatewayIp;
 	private static int gatewayPort;
-	public static String serverCommandName;
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
@@ -48,6 +48,7 @@ public class ServersLink implements ModInitializer {
 		ServerPlayConnectionEvents.JOIN.register(new PlayerJoin());
 		ServerPlayConnectionEvents.DISCONNECT.register(new PlayerDisconnect());
 		ServerTickEvents.START_SERVER_TICK.register(new ServerTick());
+		ServerEntityEvents.ENTITY_LOAD.register(new PlayerJoin());
     }
 
 	public static ServerInfo getServerInfo() {
@@ -60,10 +61,6 @@ public class ServersLink implements ModInitializer {
 
 	public static int getGatewayPort() {
 		return gatewayPort;
-	}
-
-	public static String getServerCommandName() {
-		return serverCommandName;
 	}
 
 	private void loadServerInfo() {
@@ -81,16 +78,6 @@ public class ServersLink implements ModInitializer {
 					jsonObject.get("server-ip").getAsString(),
 					jsonObject.get("server-port").getAsInt()
 			);
-			if (jsonObject.get("command-name") != null){
-				serverCommandName = jsonObject.get("command-name").getAsString()
-						.toLowerCase()
-						.replace(" ", "_")
-						.replace("/", "");
-			} else {
-				serverCommandName = "server";
-			}
-
-
 		} catch (IOException e) {
 			CONFIG_ERROR = true;
 			ServersLink.LOGGER.error("Unable to read info.json");
