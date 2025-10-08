@@ -46,14 +46,14 @@ The following options must be configured:
 Here is an example file:
 ```json 
 {
-  "group": "global",
-  "gateway": true,
-  "gateway-ip": "127.0.0.1",
-  "gateway-port": 59001,
-  "server-name": "Hub",
-  "server-ip": "127.0.0.1",
-  "server-port": 25565,
-  "command-name": "network"
+"group": "global",
+"gateway": true,
+"gateway-ip": "127.0.0.1",
+"gateway-port": 59001,
+"server-name": "Hub",
+"server-ip": "127.0.0.1",
+"server-port": 25565,
+"command-name": "network"
 }
 ```
 
@@ -61,9 +61,12 @@ Here is an example file:
 > All ports specified in `server-port` must remain open.  
 > When you stop the gateway server, all other servers are stopped.
 
+> [!TIPP]
+> All ports specified in `server-port` must remain open.  
+> When you stop the gateway server, all other servers are stopped.
 > [!TIP]
-> To get Servers Link to work in a Velocity proxy setup, you need to set the `command-name` option in the `info.json` file to something other than `server` (for example, `network`).
-> 
+> To get Servers Link to work in a Velocity proxy setup, you need to set the `command-name` option in the `info.json` file to something else thas `server` (for example `network`).
+>
 > This is because Velocity uses the `/server` command by default.
 
 If the server is your gateway, you must add another file named `config.json`. This file contains the general configuration settings for the gateway.
@@ -79,11 +82,11 @@ If the server is your gateway, you must add another file named `config.json`. Th
 Here is an example file:
 ```json
 {
-  "debug": false,
-  "global_player_count": true,
-  "whitelist_ip": false,
-  "whitelisted_ip": [],
-  "reconnect_last_server": true
+"debug": false,
+"global_player_count": true,
+"whitelist_ip": false,
+"whitelisted_ip": [],
+"reconnect_last_server": true
 }
 ```
 
@@ -121,32 +124,32 @@ The following `groups.json` correspond to this situation:
 
 ```json
 {
-  "groups": {
-    "global": {
-      "chat": false,
-      "player_data": false,
-      "player_list": false,
-      "roles": false,
-      "whitelist": false
-    },
-    "survival": {
-      "player_data": true,
-      "player_list": true,
-      "chat": true
-    },
-    "creative": {
-      "player_data": true,
-      "player_list": true,
-      "chat": true
-    }
-  },
-  "rules": [
-    {
-      "groups": ["survival", "creative"],
-      "player_list": true,
-      "chat": true
-    }
-  ]
+"groups": {
+"global": {
+"chat": false,
+"player_data": false,
+"player_list": false,
+"roles": false,
+"whitelist": false
+},
+"survival": {
+"player_data": true,
+"player_list": true,
+"chat": true
+},
+"creative": {
+"player_data": true,
+"player_list": true,
+"chat": true
+}
+},
+"rules": [
+{
+"groups": ["survival", "creative"],
+"player_list": true,
+"chat": true
+}
+]
 }
 ```
 
@@ -157,51 +160,51 @@ And these are the `info.json` files for each server:
 `Hub`
 ```json
 {
-  "group": "global",
-  "gateway": true,
-  "gateway-ip": "127.0.0.1",
-  "gateway-port": 59001,
-  "server-name": "Hub",
-  "server-ip": "127.0.0.1",
-  "server-port": 25565
+"group": "global",
+"gateway": true,
+"gateway-ip": "127.0.0.1",
+"gateway-port": 59001,
+"server-name": "Hub",
+"server-ip": "127.0.0.1",
+"server-port": 25565
 }
 ```
 `Creative`
 ```json
 {
-  "group": "creative",
-  "gateway": false,
-  "gateway-ip": "127.0.0.1",
-  "gateway-port": 59001,
-  "server-name": "Creative",
-  "server-ip": "127.0.0.1",
-  "server-port": 25566
+"group": "creative",
+"gateway": false,
+"gateway-ip": "127.0.0.1",
+"gateway-port": 59001,
+"server-name": "Creative",
+"server-ip": "127.0.0.1",
+"server-port": 25566
 }
 ```
 
 `Survival 1`
 ```json
 {
-  "group": "survival",
-  "gateway": false,
-  "gateway-ip": "127.0.0.1",
-  "gateway-port": 59001,
-  "server-name": "Survival-1",
-  "server-ip": "127.0.0.1",
-  "server-port": 25567
+"group": "survival",
+"gateway": false,
+"gateway-ip": "127.0.0.1",
+"gateway-port": 59001,
+"server-name": "Survival-1",
+"server-ip": "127.0.0.1",
+"server-port": 25567
 }
 ```
 
 `Survival 2`
 ```json
 {
-  "group": "survival",
-  "gateway": false,
-  "gateway-ip": "127.0.0.1",
-  "gateway-port": 59001,
-  "server-name": "Survival-2",
-  "server-ip": "127.0.0.1",
-  "server-port": 25568
+"group": "survival",
+"gateway": false,
+"gateway-ip": "127.0.0.1",
+"gateway-port": 59001,
+"server-name": "Survival-2",
+"server-ip": "127.0.0.1",
+"server-port": 25568
 }
 ```
 
@@ -214,7 +217,7 @@ Here is an example schema of this situation. You can find the configuration fold
 
 ## Commands
 
-This mod adds the `server` command (or the command specified in `info.json`) and the following sub-commands.
+This mod adds the `server` command and the following sub-commands.
 
 |                 Sub-command                  | Description                                            |              Permissions |
 |:--------------------------------------------:|--------------------------------------------------------|-------------------------:|
@@ -225,4 +228,3 @@ This mod adds the `server` command (or the command specified in `info.json`) and
 |              whereis `[player]`              | Indicates on which server the player is.               |         `server.whereis` |
 |               tpto `[player]`                | Teleports you to the player.                           |            `server.tpto` |
 |              tphere `[player]`               | Teleports the player to your position.                 |          `server.tphere` |
-|               run `[command]`                | Allows you to run a command on all servers.            |             `server.run` |
