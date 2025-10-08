@@ -21,8 +21,10 @@ public class PlayerDisconnect implements ServerPlayConnectionEvents.Disconnect {
         UUID uuid = player.getUuid();
         PlayerDisconnectPacket packet = new PlayerDisconnectPacket(uuid);
 
-        /* Set player pos & last server */
+        /* Set player pos, dim & last server */
         ((IPlayerServersLink) player).servers_link$setServerPos(ServersLink.getServerInfo().getName(), player.getPos());
+        ((IPlayerServersLink) player).servers_link$setServerDim(ServersLink.getServerInfo().getName(), player.getWorld());
+        ((IPlayerServersLink) player).servers_link$setServerRot(ServersLink.getServerInfo().getName(), player.getYaw(), player.getPitch());
 
         // Remove player from list
         ServersLinkApi.getServer(ServersLink.getServerInfo().getName()).removePlayer(uuid);
