@@ -101,6 +101,7 @@ For each group, you can configure the following options:
 | roles       | If roles are synchronized between servers (support Player Roles).                      | True / False |
 | whitelist   | If whitelist is synchronized between servers.                                          | True / False |
 
+
 > [!WARNING]
 > If you set chat to true, you must also set player-list to true.
 
