@@ -188,7 +188,7 @@ public class ServersLinkApi {
 
         boolean alreadyPresent = false;
         for (DummyPlayer player : dummyPlayers) {
-            if (player.getUuid().equals(profile.getId())) {
+            if (player.getUuid().equals(profile.id())) {
                 alreadyPresent = true;
             }
         }

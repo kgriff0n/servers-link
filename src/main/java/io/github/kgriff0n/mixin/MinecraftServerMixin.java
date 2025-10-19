@@ -5,7 +5,9 @@ import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.api.ServersLinkApi;
 import io.github.kgriff0n.server.ServerInfo;
 import io.github.kgriff0n.socket.Gateway;
+import net.minecraft.network.QueryableServer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.ServerMetadata;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -17,9 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Mixin(MinecraftServer.class)
-public abstract class MinecraftServerMixin {
-
-    @Shadow public abstract int getMaxPlayerCount();
+public abstract class MinecraftServerMixin implements QueryableServer {
 
     @Inject(at = @At("HEAD"), method = "createMetadataPlayers", cancellable = true)
     private void customPlayerCount(CallbackInfoReturnable<ServerMetadata.Players> cir) {
@@ -27,11 +27,15 @@ public abstract class MinecraftServerMixin {
             int maxPlayers = getMaxPlayerCount();
             int playerCount = 0;
             List<GameProfile> players = new ArrayList<>();
+            List<PlayerConfigEntry> playerConfigEntries = new ArrayList<>();
             for (ServerInfo server : ServersLinkApi.getServerList()) {
                 playerCount += server.getPlayersList().size();
-                players.addAll(server.getGameProfile());
+                for (GameProfile player : players) {
+                    playerConfigEntries.add(new PlayerConfigEntry(player.id(), player.name()));
+                }
+
             }
-            cir.setReturnValue(new ServerMetadata.Players(maxPlayers, playerCount, players));
+            cir.setReturnValue(new ServerMetadata.Players(maxPlayers, playerCount, playerConfigEntries));
         }
     }
 

@@ -14,6 +14,8 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.entity.Entity;
+import net.minecraft.network.listener.ServerPlayPacketListener;
+import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -25,11 +27,14 @@ import net.minecraft.world.TeleportTarget;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
 
+import static io.github.kgriff0n.ServersLink.LOGGER;
 
 public class PlayerJoin implements ServerPlayConnectionEvents.Join, ServerEntityEvents.Load {
 
-    private static final ArrayList<ServerPlayerEntity> joinedPlayers = new ArrayList<>();
+    private static ArrayList<ServerPlayerEntity> joinedPlayers = new ArrayList<>();
 
     @Override
     public void onPlayReady(ServerPlayNetworkHandler serverPlayNetworkHandler, PacketSender packetSender, MinecraftServer minecraftServer) {
@@ -104,8 +109,8 @@ public class PlayerJoin implements ServerPlayConnectionEvents.Join, ServerEntity
 
         if (pos == null || dim == null || rot == null) {
             // Player data not found, probably first join - teleport to world spawn
-            pos = new Vec3d(newPlayer.getWorld().getSpawnPos().getX() + 0.5, newPlayer.getWorld().getSpawnPos().getY(), newPlayer.getWorld().getSpawnPos().getZ() + 0.5);
-            dim = newPlayer.getWorld().getServer().getOverworld(); // Change in 1.21.9 because world spawn can be in any dimension
+            pos = new Vec3d(newPlayer.getEntityWorld().getSpawnPoint().getPos().getX() + 0.5, newPlayer.getEntityWorld().getSpawnPoint().getPos().getY(), newPlayer.getEntityWorld().getSpawnPoint().getPos().getZ() + 0.5);
+            dim = newPlayer.getEntityWorld().getServer().getOverworld(); // Change in 1.21.9 because world spawn can be in any dimension
             rot = List.of(newPlayer.getYaw(), newPlayer.getPitch());
         }
 
@@ -119,6 +124,12 @@ public class PlayerJoin implements ServerPlayConnectionEvents.Join, ServerEntity
         TeleportTarget teleportTarget = new TeleportTarget(
                 dim, pos, Vec3d.ZERO, rot.get(0), rot.get(1), enableFlight);
 
+        LOGGER.info("Player " + newPlayer.getName().getString() + " position: " + newPlayer.getX() + ", " + newPlayer.getY() + ", " + newPlayer.getZ() + " in dimension " + newPlayer.getEntityWorld().getRegistryKey().getValue().toString());
+        LOGGER.info("Teleporting player " + newPlayer.getName().getString() + " to " + pos.x + ", " + pos.y + ", " + pos.z + " in dimension " + (dim != null ? dim.getRegistryKey().getValue().toString() : "null"));
+        //if (pos != null && dim != null) newPlayer.teleport(dim, posX, posY, posZ, posFlags, yaw, pitch, true);
         newPlayer.teleportTo(teleportTarget);
+        LOGGER.info("Player " + newPlayer.getName().getString() + " position: " + newPlayer.getX() + ", " + newPlayer.getY() + ", " + newPlayer.getZ() + " in dimension " + newPlayer.getEntityWorld().getRegistryKey().getValue().toString());
+
+
     }
 }

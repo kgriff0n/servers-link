@@ -4,6 +4,7 @@ import io.github.kgriff0n.packet.Packet;
 import io.github.kgriff0n.api.ServersLinkApi;
 import io.github.kgriff0n.server.Settings;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -53,19 +54,19 @@ public class CommandPacket implements Packet {
         if (player != null) {
             source = new ServerCommandSource(
                     player.getCommandOutput(),
-                    player.getPos(),
+                    player.getEntityPos(),
                     player.getRotationClient(),
-                    player.getWorld() instanceof ServerWorld ? (ServerWorld)player.getWorld() : null,
-                    SERVER.getPermissionLevel(player.getGameProfile()),
+                    player.getEntityWorld() instanceof ServerWorld ? (ServerWorld)player.getEntityWorld() : null,
+                    SERVER.getPermissionLevel(new PlayerConfigEntry(player.getUuid(), player.getName().getString())),
                     "do-not-send-back",
                     player.getDisplayName(),
-                    player.getWorld().getServer(),
+                    player.getEntityWorld().getServer(),
                     player
             );
         } else {
             source = new ServerCommandSource(
                     SERVER,
-                    SERVER.getOverworld() == null ? Vec3d.ZERO : Vec3d.of(SERVER.getOverworld().getSpawnPos()),
+                    SERVER.getOverworld() == null ? Vec3d.ZERO : Vec3d.of(SERVER.getOverworld().getSpawnPoint().getPos()),
                     Vec2f.ZERO,
                     SERVER.getOverworld(),
                     4,
@@ -75,6 +76,6 @@ public class CommandPacket implements Packet {
                     null
             );
         }
-        SERVER.getCommandManager().executeWithPrefix(source, cmd);
+        SERVER.getCommandManager().parseAndExecute(source, cmd);
     }
 }
