@@ -64,7 +64,7 @@ public class ServerInfo implements Serializable {
             PropertyMap properties = new PropertyMap.Serializer().deserialize(JsonParser.parseString(playersPropertiesList.get(entry.getKey())), null, null);
             GameProfile profile = new GameProfile(entry.getKey(), entry.getValue());
             /* Initialize game profile */
-            PropertyMap gameProfileProperties = profile.getProperties();
+            PropertyMap gameProfileProperties = profile.properties();
             properties.forEach(gameProfileProperties::put);
             list.add(profile);
         }
@@ -72,8 +72,8 @@ public class ServerInfo implements Serializable {
     }
 
     public void addPlayer(GameProfile profile) {
-        this.playersList.put(profile.getId(), profile.getName());
-        this.playersPropertiesList.put(profile.getId(), new Gson().toJson(new PropertyMap.Serializer().serialize(profile.getProperties(), null, null)));
+        this.playersList.put(profile.id(), profile.name());
+        this.playersPropertiesList.put(profile.id(), new Gson().toJson(new PropertyMap.Serializer().serialize(profile.properties(), null, null)));
     }
 
     public void addPlayer(UUID uuid, String name, String properties) {

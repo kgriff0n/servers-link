@@ -20,9 +20,9 @@ public class PlayerAcknowledgementPacket implements Packet {
 
     public PlayerAcknowledgementPacket(String serverName, GameProfile profile) {
         this.serverName = serverName;
-        this.uuid = profile.getId();
-        this.name = profile.getName();
-        this.properties = new Gson().toJson(new PropertyMap.Serializer().serialize(profile.getProperties(), null, null));
+        this.uuid = profile.id();
+        this.name = profile.name();
+        this.properties = new Gson().toJson(new PropertyMap.Serializer().serialize(profile.properties(), null, null));
     }
 
     @Override

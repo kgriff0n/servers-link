@@ -22,8 +22,8 @@ public class PlayerDisconnect implements ServerPlayConnectionEvents.Disconnect {
         PlayerDisconnectPacket packet = new PlayerDisconnectPacket(uuid);
 
         /* Set player pos, dim & last server */
-        ((IPlayerServersLink) player).servers_link$setServerPos(ServersLink.getServerInfo().getName(), player.getPos());
-        ((IPlayerServersLink) player).servers_link$setServerDim(ServersLink.getServerInfo().getName(), player.getWorld());
+        ((IPlayerServersLink) player).servers_link$setServerPos(ServersLink.getServerInfo().getName(), player.getEntityPos());
+        ((IPlayerServersLink) player).servers_link$setServerDim(ServersLink.getServerInfo().getName(), player.getEntityWorld());
         ((IPlayerServersLink) player).servers_link$setServerRot(ServersLink.getServerInfo().getName(), player.getYaw(), player.getPitch());
 
         // Remove player from list

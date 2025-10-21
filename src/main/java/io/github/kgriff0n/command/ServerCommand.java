@@ -130,7 +130,7 @@ public class ServerCommand {
         if (player != null) {
             /* Save player pos */
             String name = ServersLink.getServerInfo().getName();
-            ((IPlayerServersLink) player).servers_link$setServerPos(name, player.getPos());
+            ((IPlayerServersLink) player).servers_link$setServerPos(name, player.getEntityPos());
 
             if (name.equals(serverName)) {
                 player.sendMessage(Text.literal("You are already connected to this server").formatted(Formatting.RED));
@@ -163,7 +163,7 @@ public class ServerCommand {
         String server = ServersLinkApi.whereIs(player.getUuid());
         if (sender == null) return 0;
         if (server.equals(ServersLink.getServerInfo().getName())) {
-            sender.teleport(player.getWorld(), player.getX(), player.getY(), player.getZ(), EnumSet.noneOf(PositionFlag.class), player.getYaw(), player.getPitch(), false);
+            sender.teleport(player.getEntityWorld(), player.getX(), player.getY(), player.getZ(), EnumSet.noneOf(PositionFlag.class), player.getYaw(), player.getPitch(), false);
         } else {
             TeleportationRequestPacket request = new TeleportationRequestPacket(player.getUuid(), sender.getUuid(), ServersLink.getServerInfo().getName(), server);
             if (ServersLink.isGateway) {
@@ -180,7 +180,7 @@ public class ServerCommand {
         String server = ServersLinkApi.whereIs(player.getUuid());
         if (sender == null) return 0;
         if (server.equals(ServersLink.getServerInfo().getName())) {
-            player.teleport(sender.getWorld(), sender.getX(), sender.getY(), sender.getZ(), EnumSet.noneOf(PositionFlag.class), sender.getYaw(), sender.getPitch(), false);
+            player.teleport(sender.getEntityWorld(), sender.getX(), sender.getY(), sender.getZ(), EnumSet.noneOf(PositionFlag.class), sender.getYaw(), sender.getPitch(), false);
         } else {
             TeleportationAcceptPacket accept = new TeleportationAcceptPacket(sender.getX(), sender.getY(), sender.getZ(), player.getUuid(), server, ServersLink.getServerInfo().getName());
             if (ServersLink.isGateway) {

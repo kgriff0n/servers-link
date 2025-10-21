@@ -40,7 +40,7 @@ public abstract class ServerPlayNetworkHandlerMixin {
         if (ServersLinkApi.getPreventDisconnect().contains(player.getUuid())) {
             ServersLinkApi.getPreventDisconnect().remove(player.getUuid());
         } else {
-            getPlayer().getServer().getPlayerManager().broadcast(message, overlay);
+            getPlayer().getEntityWorld().getServer().getPlayerManager().broadcast(message, overlay);
         }
     }
 }
