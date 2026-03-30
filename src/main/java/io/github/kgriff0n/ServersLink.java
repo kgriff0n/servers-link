@@ -29,6 +29,8 @@ public class ServersLink implements ModInitializer {
 	private static String gatewayIp;
 	private static int gatewayPort;
 
+    private static String commandName;
+
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
 	public static MinecraftServer SERVER;
@@ -63,7 +65,11 @@ public class ServersLink implements ModInitializer {
 		return gatewayPort;
 	}
 
-	private void loadServerInfo() {
+    public static String getCommandName() {
+        return commandName;
+    }
+
+    private void loadServerInfo() {
 		Path path = CONFIG.resolve("info.json");
 		try {
 			String jsonContent = Files.readString(path);
@@ -78,6 +84,8 @@ public class ServersLink implements ModInitializer {
 					jsonObject.get("server-ip").getAsString(),
 					jsonObject.get("server-port").getAsInt()
 			);
+            commandName = jsonObject.get("command-name").getAsString();
+            commandName = commandName == null ? "server" : commandName;
 		} catch (IOException e) {
 			CONFIG_ERROR = true;
 			ServersLink.LOGGER.error("Unable to read info.json");

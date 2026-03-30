@@ -109,16 +109,29 @@ public class G2SConnection extends Thread {
                         }
                     }
                 }
-                SERVER.execute(() -> packet.onGatewayReceive(server.getName()));
+                if (server != null) {
+                    SERVER.execute(() -> packet.onGatewayReceive(server.getName()));
+                }
             }
             socket.close();
-        } catch (IOException e) {
-            if (e.getMessage() != null) {
-                ServersLink.LOGGER.error("Error {} in sub-server {}", e.getMessage(), server.getName());
-                ServersLink.LOGGER.info(this.server.toString());
+        } catch (StreamCorruptedException e) {
+            if (e.getMessage() != null && e.getMessage().contains("50524F58")) {
+                ServersLink.LOGGER.error("Received PROXY protocol header on Gateway Port. Please ensure your Proxy/LoadBalancer is connecting to the Minecraft Server Port, NOT the ServersLink Gateway Port.");
+            } else {
+                ServersLink.LOGGER.error("Stream corruption in unidentified connection: {}", e.getMessage());
             }
-            ServersLinkApi.disconnectServer(this.server);
-            ServersLinkApi.broadcastToOp(Text.literal("Sub-server " + server.getName() + " has disconnected").formatted(Formatting.RED));
+            this.interrupt();
+        } catch (IOException e) {
+            if (server != null) {
+                if (e.getMessage() != null) {
+                    ServersLink.LOGGER.error("Error {} in sub-server {}", e.getMessage(), server.getName());
+                    ServersLink.LOGGER.info(this.server.toString());
+                }
+                ServersLinkApi.disconnectServer(this.server);
+                ServersLinkApi.broadcastToOp(Text.literal("Sub-server " + server.getName() + " has disconnected").formatted(Formatting.RED));
+            } else if (e.getMessage() != null) {
+                ServersLink.LOGGER.error("Error {} in unidentified connection", e.getMessage());
+            }
             this.interrupt();
         } catch (ClassNotFoundException e) {
             ServersLink.LOGGER.error("Receive invalid data: {}", e.getMessage());

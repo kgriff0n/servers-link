@@ -33,7 +33,7 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public class ServerCommand {
     public static void register() {
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> dispatcher.register(literal("server")
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> dispatcher.register(literal(ServersLink.getCommandName())
                 .then(literal("list")
                         .requires(Permissions.require("server.list", PermissionLevel.GAMEMASTERS))
                         .executes(context -> list(context.getSource()))

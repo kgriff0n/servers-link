@@ -21,15 +21,17 @@ public class CommandPacket implements Packet {
 
     private final UUID uuid;
     private final String command;
+    private final boolean isRun;
 
-    public CommandPacket(UUID uuid, String command) {
+    public CommandPacket(UUID uuid, String command, boolean isRun) {
         this.uuid = uuid;
         this.command = command;
+        this.isRun = isRun;
     }
 
     @Override
     public boolean shouldReceive(Settings settings) {
-        return command.startsWith("server run ")
+        return isRun
                 || settings.isWhitelistSynced() && command.startsWith("whitelist")
                 || settings.isRolesSynced() &&
                     (command.startsWith("op") || command.startsWith("deop")
@@ -39,12 +41,6 @@ public class CommandPacket implements Packet {
 
     @Override
     public void onReceive() {
-        String cmd;
-        if (command.startsWith("server run ")) {
-            cmd = command.substring(11);
-        } else {
-            cmd = command;
-        }
         ServerCommandSource source;
 
         ServerPlayerEntity player = null;
@@ -77,6 +73,6 @@ public class CommandPacket implements Packet {
                     null
             );
         }
-        SERVER.getCommandManager().parseAndExecute(source, cmd);
+        SERVER.getCommandManager().parseAndExecute(source, command);
     }
 }

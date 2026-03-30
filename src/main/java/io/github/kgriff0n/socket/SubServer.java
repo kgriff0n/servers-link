@@ -24,6 +24,9 @@ public class SubServer extends Thread {
     /** List of player UUIDs that can connect */
     private ArrayList<UUID> waitingPlayers;
 
+    private String ip;
+    private int port;
+
     public static SubServer getInstance() {
         return connection;
     }
@@ -33,19 +36,11 @@ public class SubServer extends Thread {
     private ObjectOutputStream out;
 
     public SubServer(String ip, int port) {
+        this.ip = ip;
+        this.port = port;
         if (connection == null) {
             waitingPlayers = new ArrayList<>();
 
-            try {
-                clientSocket = new Socket(ip, port);
-
-                out = new ObjectOutputStream(clientSocket.getOutputStream());
-                out.flush();
-
-                in = new ObjectInputStream(clientSocket.getInputStream());
-            } catch (IOException e) {
-                ServersLink.LOGGER.error("Unable to establish connection");
-            }
             connection = this;
             executor  = Executors.newSingleThreadExecutor();
         } else {
@@ -59,9 +54,11 @@ public class SubServer extends Thread {
         } else {
             executor.submit(() -> {
                 try {
-                    out.writeObject(packet);
-                    out.flush();
-                    out.reset();
+                    if (out != null) {
+                        out.writeObject(packet);
+                        out.flush();
+                        out.reset();
+                    }
                 } catch (IOException e) {
                     ServersLink.LOGGER.error("Unable to send {}", packet.getClass().getName());
                 }
@@ -83,20 +80,71 @@ public class SubServer extends Thread {
 
     @Override
     public void run() {
-        try {
-            send(new NewServerPacket(ServersLink.getServerInfo()));
-            send(new ServerStatusPacket(ServersLink.getServerInfo().getName(), 20.0f, false));
-            while (IS_RUNNING) {
+        while (IS_RUNNING) {
+            try {
+                if (clientSocket == null || clientSocket.isClosed() || !clientSocket.isConnected()) {
+                    try {
+                        ServersLink.LOGGER.info("Connecting to gateway...");
+                        clientSocket = new Socket(ip, port);
+                        out = new ObjectOutputStream(clientSocket.getOutputStream());
+                        out.flush();
+                        in = new ObjectInputStream(clientSocket.getInputStream());
+
+                        // Send handshake packets
+                        send(new NewServerPacket(ServersLink.getServerInfo()));
+                        send(new ServerStatusPacket(ServersLink.getServerInfo().getName(), 20.0f, false));
+
+                        ServersLink.LOGGER.info("Connected to gateway!");
+                    } catch (IOException e) {
+                        ServersLink.LOGGER.error("Unable to connect to gateway: {}", e.getMessage());
+                        try {
+                            if (clientSocket != null) clientSocket.close();
+                        } catch (IOException ex) {
+                            // ignore
+                        }
+                        clientSocket = null;
+                        out = null;
+                        in = null;
+
+                        try {
+                            Thread.sleep(60000); // Wait 1 min
+                        } catch (InterruptedException ex) {
+                            break;
+                        }
+                        continue;
+                    }
+                }
+
                 try {
                     Packet pkt = ((Packet)in.readObject());
                     SERVER.execute(pkt::onReceive);
+                } catch (IOException e) {
+                    ServersLink.LOGGER.error("Gateway disconnected");
+                    try {
+                        if (clientSocket != null) clientSocket.close();
+                    } catch (IOException ex) {
+                        // ignore
+                    }
+                    clientSocket = null;
+                    out = null;
+                    in = null;
+
+                    try {
+                        Thread.sleep(60000); // Wait 1 min
+                    } catch (InterruptedException ex) {
+                        break;
+                    }
                 } catch (ClassNotFoundException e) {
                     ServersLink.LOGGER.error("Receive invalid data");
                 }
+            } catch (Exception e) {
+                ServersLink.LOGGER.error("Unexpected error in SubServer loop", e);
+                try {
+                    Thread.sleep(60000);
+                } catch (InterruptedException ex) {
+                    break;
+                }
             }
-        } catch (IOException e) {
-            ServersLink.LOGGER.error("Gateway disconnected");
-            SERVER.stop(true);
         }
     }
 

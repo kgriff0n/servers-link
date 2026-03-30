@@ -25,7 +25,9 @@ public class CommandManagerMixin {
             ServerPlayerEntity player = parseResults.getContext().getSource().getPlayer();
             UUID uuid = null;
             if (player != null) uuid = player.getUuid();
-            if (command.startsWith("server run ")) {
+            
+            String prefix = ServersLink.getCommandName() + " run ";
+            if (command.startsWith(prefix)) {
                 if (player != null) {
                     if (command.contains("@r")) {
                         player.sendMessage(Text.literal("Warning, using @r can cause desync between servers").formatted(Formatting.RED, Formatting.BOLD));
@@ -34,11 +36,20 @@ public class CommandManagerMixin {
                         player.sendMessage(Text.literal("Be careful when using execute, especially with the positions").formatted(Formatting.RED, Formatting.BOLD));
                     }
                     if (command.contains("teleport") || command.contains("tp") || command.contains("whitelist") || command.contains("op")) {
-                        player.sendMessage(Text.literal("You should use native /server commands").formatted(Formatting.RED, Formatting.BOLD));
+                        player.sendMessage(Text.literal("You should use native /" + ServersLink.getCommandName() + " commands").formatted(Formatting.RED, Formatting.BOLD));
                     }
                 }
             }
-            ServersLinkApi.send(new CommandPacket(uuid, command), ServersLink.getServerInfo().getName());
+            String cmd;
+            boolean isRun;
+            if (command.startsWith(prefix)) {
+                cmd = command.substring(prefix.length());
+                isRun = true;
+            } else {
+                cmd = command;
+                isRun = false;
+            }
+            ServersLinkApi.send(new CommandPacket(uuid, cmd, isRun), ServersLink.getServerInfo().getName());
         }
     }
 
