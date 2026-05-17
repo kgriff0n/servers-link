@@ -2,12 +2,12 @@ package io.github.kgriff0n;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import io.github.kgriff0n.api.ServersLinkApi;
 import io.github.kgriff0n.command.ServerCommand;
 import io.github.kgriff0n.event.*;
 import io.github.kgriff0n.server.ServerInfo;
 import net.fabricmc.api.ModInitializer;
 
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -37,6 +37,16 @@ public class ServersLink implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+        ServersLinkApi.addPlayerDataKey("Dimension");
+        ServersLinkApi.addPlayerDataKey("ender_pearls");
+        ServersLinkApi.addPlayerDataKey("entered_nether_pos");
+        ServersLinkApi.addPlayerDataKey("LastDeathLocation");
+        ServersLinkApi.addPlayerDataKey("Pos");
+        ServersLinkApi.addPlayerDataKey("respawn");
+        ServersLinkApi.addPlayerDataKey("RootVehicle");
+        ServersLinkApi.addPlayerDataKey("Rotation");
+        ServersLinkApi.addPlayerDataKey("ShoulderEntityLeft");
+        ServersLinkApi.addPlayerDataKey("ShoulderEntityRight");
 
 		loadServerInfo();
 
@@ -48,7 +58,6 @@ public class ServersLink implements ModInitializer {
 		ServerPlayConnectionEvents.JOIN.register(new PlayerJoin());
 		ServerPlayConnectionEvents.DISCONNECT.register(new PlayerDisconnect());
 		ServerTickEvents.START_SERVER_TICK.register(new ServerTick());
-		ServerEntityEvents.ENTITY_LOAD.register(new PlayerJoin());
     }
 
 	public static ServerInfo getServerInfo() {

@@ -3,13 +3,11 @@ package io.github.kgriff0n.packet.info;
 import com.google.gson.Gson;
 import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
 import io.github.kgriff0n.packet.Packet;
 import io.github.kgriff0n.api.ServersLinkApi;
 import io.github.kgriff0n.server.Settings;
 
-import java.util.Objects;
 import java.util.UUID;
 
 public class NewPlayerPacket implements Packet {

@@ -6,11 +6,11 @@
     "CommandManagerMixin",
     "EntitySelectorMixin",
     "MinecraftServerMixin",
-    "PlayerEntityMixin",
-    "PlayerManagerAccessor",
     "PlayerManagerMixin",
+    "PlayerSaveHandlerMixin",
     "ServerPlayerEntityMixin",
-    "ServerPlayNetworkHandlerMixin"
+    "ServerPlayNetworkHandlerMixin",
+    "accessor.PlayerManagerAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

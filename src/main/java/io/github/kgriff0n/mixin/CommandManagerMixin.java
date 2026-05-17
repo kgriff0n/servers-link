@@ -1,7 +1,6 @@
 package io.github.kgriff0n.mixin;
 
 import com.mojang.brigadier.ParseResults;
-import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.packet.play.CommandPacket;
 import io.github.kgriff0n.api.ServersLinkApi;
 import net.minecraft.server.command.CommandManager;
@@ -38,7 +37,7 @@ public class CommandManagerMixin {
                     }
                 }
             }
-            ServersLinkApi.send(new CommandPacket(uuid, command), ServersLink.getServerInfo().getName());
+            ServersLinkApi.send(new CommandPacket(uuid, command));
         }
     }
 

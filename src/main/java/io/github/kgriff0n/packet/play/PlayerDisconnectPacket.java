@@ -39,9 +39,8 @@ public class PlayerDisconnectPacket implements Packet {
     }
 
     @Override
-    public void onGatewayReceive(String sender) {
-        Packet.super.onGatewayReceive(sender);
+    public void gatewayLogic() {
         Gateway.getInstance().removePlayer(uuid);
-        Gateway.getInstance().sendAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
+        Gateway.getInstance().sendToAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
     }
 }

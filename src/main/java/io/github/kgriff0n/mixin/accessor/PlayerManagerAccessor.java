@@ -1,4 +1,4 @@
-package io.github.kgriff0n.mixin;
+package io.github.kgriff0n.mixin.accessor;
 
 import net.minecraft.advancement.PlayerAdvancementTracker;
 import net.minecraft.server.PlayerManager;

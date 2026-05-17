@@ -2,34 +2,45 @@ package io.github.kgriff0n.api;
 
 import com.mojang.authlib.GameProfile;
 import io.github.kgriff0n.ServersLink;
-import io.github.kgriff0n.event.ServerTick;
 import io.github.kgriff0n.packet.Packet;
+import io.github.kgriff0n.packet.PacketHeader;
 import io.github.kgriff0n.packet.info.ServersInfoPacket;
 import io.github.kgriff0n.packet.play.PlayerDisconnectPacket;
-import io.github.kgriff0n.packet.play.PlayerTransferPacket;
+import io.github.kgriff0n.packet.play.PlayerTransferRequestPacket;
 import io.github.kgriff0n.socket.Gateway;
 import io.github.kgriff0n.socket.G2SConnection;
 import io.github.kgriff0n.socket.SubServer;
 import io.github.kgriff0n.util.DummyPlayer;
 import io.github.kgriff0n.server.ServerInfo;
-import net.minecraft.network.packet.s2c.common.ServerTransferS2CPacket;
+import io.github.kgriff0n.util.PositionOverride;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static io.github.kgriff0n.ServersLink.SERVER;
 
 public class ServersLinkApi {
 
-    private static final HashMap<ServerInfo, G2SConnection> serverList = new HashMap<>();
+    private static final ConcurrentHashMap<ServerInfo, G2SConnection> serverList = new ConcurrentHashMap<>();
 
     private static final HashSet<UUID> preventConnect = new HashSet<>();
     private static final HashSet<UUID> preventDisconnect = new HashSet<>();
 
-    public static List<DummyPlayer> dummyPlayers = new ArrayList<>();
+    /** List of player UUIDs that can connect - Gateway will likely ignore this */
+    private static final ArrayList<UUID> waitingPlayers = new ArrayList<>();
+
+    private static final List<DummyPlayer> dummyPlayers = new ArrayList<>();
+
+    private static final List<String> playerDataKeys = new ArrayList<>();
+
+    private static final HashMap<UUID, PositionOverride> overridePosition = new HashMap<>();
 
     public static HashSet<UUID> getPreventConnect() {
         return preventConnect;
@@ -39,7 +50,19 @@ public class ServersLinkApi {
         return preventDisconnect;
     }
 
-    public static HashMap<ServerInfo, G2SConnection> getServerMap() {
+    public static ArrayList<UUID> getWaitingPlayers() {
+        return waitingPlayers;
+    }
+
+    public static void addWaitingPlayer(UUID uuid) {
+        waitingPlayers.add(uuid);
+    }
+
+    public static void removeWaitingPlayer(UUID uuid) {
+        waitingPlayers.remove(uuid);
+    }
+
+    public static ConcurrentHashMap<ServerInfo, G2SConnection> getServerMap() {
         return serverList;
     }
 
@@ -50,7 +73,7 @@ public class ServersLinkApi {
     public static void setServerList(ArrayList<ServerInfo> list) {
         serverList.clear();
         for (ServerInfo server : list) {
-            serverList.put(server, null);
+            serverList.put(server, new G2SConnection(null));
         }
     }
 
@@ -98,7 +121,7 @@ public class ServersLinkApi {
      * @param server a new server
      * @param connection used from the hub for packet transfer
      */
-    public static void addServer(ServerInfo server, @Nullable G2SConnection connection) {
+    public static void addServer(ServerInfo server, @NotNull G2SConnection connection) {
         SERVER.execute(() -> {
             serverList.remove(server); // remove old one
             serverList.put(server, connection);
@@ -114,13 +137,13 @@ public class ServersLinkApi {
         SERVER.execute(() -> {
             Gateway gateway = Gateway.getInstance();
             server.getPlayersList().forEach((uuid, name) -> {
-                gateway.sendAll(new PlayerDisconnectPacket(uuid));
+                gateway.sendToAll(new PlayerDisconnectPacket(uuid));
                 dummyPlayers.removeIf(player -> player.getUuid().equals(uuid));
             });
-            gateway.sendAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
+            gateway.sendToAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
             server.getPlayersList().clear();
             server.getGameProfile().clear();
-            serverList.put(server, null);
+            serverList.put(server, new G2SConnection(null));
         });
     }
 
@@ -131,7 +154,7 @@ public class ServersLinkApi {
     public static int getRunningSubServers() {
         int count = 0;
         for (G2SConnection connection : serverList.values()) {
-            if (connection != null) count++;
+            if (connection.isConnected()) count++;
         }
         return count;
     }
@@ -151,13 +174,15 @@ public class ServersLinkApi {
     }
 
     /**
-     * Sends a packet. If called from the hub, the packet is
-     * sent to all other sub-servers, otherwise it is sent to the hub.
+     * Sends a packet.
      * @param packet the packet to send
      */
-    public static void send(Packet packet, String source) {
+    public static void send(Packet packet) {
         if (ServersLink.isGateway) {
-            Gateway.getInstance().forward(packet, source);
+            packet.gatewayLogic();
+            if (packet instanceof PacketHeader pkt) {
+                Gateway.getInstance().sendTo(pkt.getRecipient(), packet);
+            }
         } else {
             SubServer.getInstance().send(packet);
         }
@@ -237,24 +262,40 @@ public class ServersLinkApi {
     /**
      * Transfers a player to another server.
      * @param player the player to transfer
-     * @param originServer name of the current server
-     * @param serverName the name of the server to which the player will be transferred
+     * @param from name of the current server
+     * @param to the name of the server to which the player will be transferred
      */
-    public static void transferPlayer(ServerPlayerEntity player, String originServer, String serverName) {
-        ServerInfo server = ServersLinkApi.getServer(serverName);
+    public static void transferPlayer(ServerPlayerEntity player, String from, String to) {
+        PlayerTransferRequestPacket transferPacket = new PlayerTransferRequestPacket(player.getUuid(), from, to);
+        ServersLinkApi.send(transferPacket);
+    }
 
-        if (ServersLink.isGateway) {
-            /* add player to other server list and send packet */
-            PlayerTransferPacket transferPacket = new PlayerTransferPacket(player.getUuid(), serverName);
-            transferPacket.onGatewayReceive(originServer);
-        } else {
-            /* send packet, add player to transferred list and transfer the player */
-            SubServer connection = SubServer.getInstance();
-            connection.send(new PlayerTransferPacket(player.getUuid(), serverName));
-        }
+    public static String getServerName() {
+        return ServersLink.getServerInfo().getName();
+    }
 
-        player.networkHandler.sendPacket(new ServerTransferS2CPacket(server.getIp(), server.getPort()));
-        ServerTick.scheduleDisconnect(player.getUuid(), 20); // delay
+    public static MinecraftServer getServer() {
+        return SERVER;
+    }
+
+    public static void addPlayerDataKey(String key) {
+        playerDataKeys.add(key);
+    }
+
+    public static List<String> getPlayerDataKeys() {
+        return playerDataKeys;
+    }
+
+    public static void addPositionOverride(UUID uuid, Vec3d position, Vec2f rotation, String world) {
+        overridePosition.put(uuid, new PositionOverride(position, rotation, world));
+    }
+
+    public static boolean shouldOverridePosition(UUID uuid) {
+        return overridePosition.containsKey(uuid);
+    }
+
+    public static PositionOverride getPositionOverride(UUID uuid) {
+        return overridePosition.remove(uuid);
     }
 
 }

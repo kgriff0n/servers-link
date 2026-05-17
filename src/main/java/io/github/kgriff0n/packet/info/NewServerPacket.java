@@ -26,14 +26,14 @@ public class NewServerPacket implements Packet {
     public void onReceive() {}
 
     @Override
-    public void onGatewayReceive(String sender) {
+    public void gatewayLogic() {
         Gateway gateway = Gateway.getInstance();
         try {
-            gateway.sendTo(new UpdateWhitelistPacket(), this.server.getName());
-            gateway.sendTo(new UpdateRolesPacket(), this.server.getName());
+            gateway.sendTo(this.server.getName(), new UpdateWhitelistPacket());
+            gateway.sendTo(this.server.getName(), new UpdateRolesPacket());
         } catch (IOException e) {
             ServersLink.LOGGER.error("Unable to send data to {}", this.server.getName());
         }
-        Gateway.getInstance().sendAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
+        Gateway.getInstance().sendToAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
     }
 }

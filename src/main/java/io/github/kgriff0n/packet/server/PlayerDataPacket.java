@@ -1,7 +1,7 @@
 package io.github.kgriff0n.packet.server;
 
 import io.github.kgriff0n.ServersLink;
-import io.github.kgriff0n.mixin.PlayerManagerAccessor;
+import io.github.kgriff0n.mixin.accessor.PlayerManagerAccessor;
 import io.github.kgriff0n.packet.Packet;
 import io.github.kgriff0n.server.Settings;
 import io.github.kgriff0n.util.PlayerData;

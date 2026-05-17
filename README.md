@@ -41,7 +41,9 @@ The following options must be configured:
 | server-ip    | IP of the Minecraft server.                                                                                                                                               |  IP Address  |
 | server-port  | Port of the Minecraft server.                                                                                                                                             |     Port     |
 | command-name | (optional) Name of the added command. If not specified defaults to /server.                                                                                               |    String    |
+
 Here is an example file:
+
 ```json 
 {
   "group": "global",
@@ -75,6 +77,7 @@ If the server is your gateway, you must add another file named `config.json`. Th
 | reconnect_last_server | Indicates whether players should be reconnected to the last server from which they disconnected.  |     True / False     |
 
 Here is an example file:
+
 ```json
 {
   "debug": false,
@@ -164,6 +167,7 @@ And these are the `info.json` files for each server:
   "server-port": 25565
 }
 ```
+
 `Creative`
 ```json
 {
@@ -219,7 +223,6 @@ This mod adds the `server` command (or the command specified in `info.json`) and
 |                     list                     | Lists all connected servers.                           |            `server.list` |
 |             join `[server-name]`             | Joins the server.                                      |            `server.join` |
 |       join `[server-name]` `[player]`        | Makes the player join the server.                      |      `server.join.other` |
-| join `[server-name]` `[player]` `[position]` | Makes the player join the server at the given position |   `server.join.position` |
 |              whereis `[player]`              | Indicates on which server the player is.               |         `server.whereis` |
 |               tpto `[player]`                | Teleports you to the player.                           |            `server.tpto` |
 |              tphere `[player]`               | Teleports the player to your position.                 |          `server.tphere` |

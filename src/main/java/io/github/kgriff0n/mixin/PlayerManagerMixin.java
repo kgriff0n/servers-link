@@ -1,7 +1,6 @@
 package io.github.kgriff0n.mixin;
 
 import com.mojang.serialization.JsonOps;
-import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.packet.play.SystemChatPacket;
 import io.github.kgriff0n.packet.server.PlayerDataPacket;
 import io.github.kgriff0n.util.DummyPlayer;
@@ -50,7 +49,7 @@ public abstract class PlayerManagerMixin {
     @Inject(at = @At("HEAD"), method = "broadcast(Lnet/minecraft/text/Text;Z)V")
     private void sendSystemPacket(Text message, boolean overlay, CallbackInfo ci) {
         SystemChatPacket packet = new SystemChatPacket(TextCodecs.CODEC.encodeStart(RegistryOps.of(JsonOps.INSTANCE, SERVER.getRegistryManager()), message).getOrThrow().toString());
-        ServersLinkApi.send(packet, ServersLink.getServerInfo().getName());
+        ServersLinkApi.send(packet);
     }
 
     @Inject(at = @At("HEAD"), method = "onPlayerConnect")
@@ -61,7 +60,7 @@ public abstract class PlayerManagerMixin {
     @Inject(at = @At("TAIL"), method = "savePlayerData")
     private void sendPlayerData(ServerPlayerEntity player, CallbackInfo ci) {
         try {
-            ServersLinkApi.send(new PlayerDataPacket(player.getUuid()), ServersLink.getServerInfo().getName());
+            ServersLinkApi.send(new PlayerDataPacket(player.getUuid()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

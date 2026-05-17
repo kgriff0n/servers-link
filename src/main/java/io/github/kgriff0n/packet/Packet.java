@@ -1,9 +1,6 @@
 package io.github.kgriff0n.packet;
 
-import io.github.kgriff0n.ServersLink;
-import io.github.kgriff0n.api.ServersLinkApi;
 import io.github.kgriff0n.server.Settings;
-import io.github.kgriff0n.socket.Gateway;
 
 import java.io.Serializable;
 
@@ -15,13 +12,6 @@ public interface Packet extends Serializable {
      */
     void onReceive();
 
-    default void onGatewayReceive(String sender) {
-        Gateway.getInstance().forward(this, sender);
-        if (shouldReceive(Gateway.getInstance().getSettings(ServersLink.getServerInfo().getGroupId(), ServersLinkApi.getServer(sender).getGroupId()))) {
-            onReceive();
-        }
-    }
-
     /**
      * Determines whether a server should
      * receive the packet, based on settings
@@ -32,4 +22,5 @@ public interface Packet extends Serializable {
         return true;
     }
 
+    default void gatewayLogic() {}
 }

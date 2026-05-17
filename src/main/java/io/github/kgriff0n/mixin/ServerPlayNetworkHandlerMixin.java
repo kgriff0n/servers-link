@@ -1,7 +1,6 @@
 package io.github.kgriff0n.mixin;
 
 import com.mojang.serialization.JsonOps;
-import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.packet.play.PlayerChatPacket;
 import io.github.kgriff0n.api.ServersLinkApi;
 import net.minecraft.network.message.MessageType;
@@ -32,7 +31,7 @@ public abstract class ServerPlayNetworkHandlerMixin {
     private void sendChatMessage(SignedMessage message, MessageType.Parameters params, CallbackInfo ci) {
         Text formattedMessage = params.applyChatDecoration(message.getContent());
         PlayerChatPacket packet = new PlayerChatPacket(TextCodecs.CODEC.encodeStart(RegistryOps.of(JsonOps.INSTANCE, SERVER.getRegistryManager()), formattedMessage).getOrThrow().toString(), this.getPlayer().getName().getString());
-        ServersLinkApi.send(packet, ServersLink.getServerInfo().getName());
+        ServersLinkApi.send(packet);
     }
 
     @Redirect(method = "cleanUp", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;broadcast(Lnet/minecraft/text/Text;Z)V"))

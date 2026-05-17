@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -27,7 +28,7 @@ public class ServerTick implements ServerTickEvents.StartTick {
     private int count = 0;
 
     @Override
-    public void onStartTick(MinecraftServer server) {
+    public void onStartTick(@NotNull MinecraftServer server) {
         count++;
         if (count >= 600) { // every 30s
             count = 0;
@@ -35,7 +36,7 @@ public class ServerTick implements ServerTickEvents.StartTick {
             /* update self */
             ServersLink.getServerInfo().setTps(tps);
             if (ServersLink.isGateway) {
-                Gateway.getInstance().sendAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
+                Gateway.getInstance().sendToAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
             } else {
                 SubServer.getInstance().send(new ServerStatusPacket(ServersLink.getServerInfo().getName(), tps, false));
             }

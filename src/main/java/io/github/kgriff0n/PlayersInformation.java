@@ -46,14 +46,16 @@ public class PlayersInformation {
                 .resolve("data")
                 .resolve("servers_link.nbt");
 
-        try (InputStream is = Files.newInputStream(dataFile)) {
-            NbtCompound nbt = NbtIo.readCompressed(is, NbtSizeTracker.ofUnlimitedBytes());
-            for (String uuid : nbt.getKeys()) {
-                UUID player = UUID.fromString(uuid);
-                nbt.getString(uuid).ifPresent(string -> lastServer.put(player, string));
+        if (Files.exists(dataFile)) {
+            try (InputStream is = Files.newInputStream(dataFile)) {
+                NbtCompound nbt = NbtIo.readCompressed(is, NbtSizeTracker.ofUnlimitedBytes());
+                for (String uuid : nbt.getKeys()) {
+                    UUID player = UUID.fromString(uuid);
+                    nbt.getString(uuid).ifPresent(string -> lastServer.put(player, string));
+                }
+            } catch (IOException e) {
+                ServersLink.LOGGER.error("Unable to load data");
             }
-        } catch (IOException e) {
-            ServersLink.LOGGER.error("Unable to load data");
         }
     }
 }

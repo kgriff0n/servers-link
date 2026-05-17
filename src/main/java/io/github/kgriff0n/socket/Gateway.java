@@ -19,7 +19,6 @@ import java.nio.file.Path;
 import java.util.*;
 
 import static io.github.kgriff0n.ServersLink.IS_RUNNING;
-import static io.github.kgriff0n.ServersLink.SERVER;
 
 public class Gateway extends Thread {
 
@@ -43,7 +42,7 @@ public class Gateway extends Thread {
             gateway = this;
             groups = new HashMap<>();
             loadGroups();
-            ServersLinkApi.addServer(ServersLink.getServerInfo(), null);
+            ServersLinkApi.addServer(ServersLink.getServerInfo(), new G2SConnection(null));
         } catch (IOException e) {
             ServersLink.LOGGER.info("Unable to start central server");
         }
@@ -53,15 +52,9 @@ public class Gateway extends Thread {
         return gateway;
     }
 
-    public void sendAll(Packet packet) {
-        for (G2SConnection sub : ServersLinkApi.getServerMap().values()) {
-            if (sub != null) sub.send(packet);
-        }
-    }
-
-    public void sendTo(Packet packet, String serverName) {
-        if (serverName.equals(ServersLink.getServerInfo().getName())) {
-            SERVER.execute(packet::onReceive);
+    public void sendTo(String serverName, Packet packet) {
+        if (serverName.equals(ServersLinkApi.getServerName())) {
+            packet.onReceive();
         } else {
             for (ServerInfo server : ServersLinkApi.getServerList()) {
                 if (server.getName().equals(serverName)) {
@@ -71,11 +64,17 @@ public class Gateway extends Thread {
         }
     }
 
-    public void forward(Packet packet, String sourceServer) {
-        String sourceGroup = ServersLinkApi.getServer(sourceServer).getGroupId();
+    public void sendToAll(Packet packet) {
+        for (G2SConnection sub : ServersLinkApi.getServerMap().values()) {
+            if (sub != null) sub.send(packet);
+        }
+    }
+
+    public void sendToAllFrom(String serverName, Packet packet) {
+        String sourceGroup = ServersLinkApi.getServer(serverName).getGroupId();
         for (ServerInfo server : ServersLinkApi.getServerList()) {
             G2SConnection sub = ServersLinkApi.getServerMap().get(server);
-            if (sub != null && !server.getName().equals(sourceServer)) {
+            if (sub != null && !server.getName().equals(serverName)) {
                 if (isDebugEnabled()) ServersLink.LOGGER.info("\u001B[33mForward packet {} to {}?", packet.getClass().getName(), server.getName());
                 if (packet.shouldReceive(getSettings(sourceGroup, server.getGroupId()))) {
                     if (isDebugEnabled()) ServersLink.LOGGER.info("\u001B[32mYes");

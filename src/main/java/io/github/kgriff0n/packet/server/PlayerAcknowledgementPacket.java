@@ -26,14 +26,11 @@ public class PlayerAcknowledgementPacket implements Packet {
     }
 
     @Override
-    public void onReceive() {
-
-    }
+    public void onReceive() {}
 
     @Override
-    public void onGatewayReceive(String sender) {
-        Packet.super.onGatewayReceive(sender);
+    public void gatewayLogic() {
         ServersLinkApi.getServer(serverName).addPlayer(this.uuid, this.name, this.properties);
-        Gateway.getInstance().sendAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
+        Gateway.getInstance().sendToAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
     }
 }
