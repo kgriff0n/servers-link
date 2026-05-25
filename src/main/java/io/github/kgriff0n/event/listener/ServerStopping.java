@@ -1,4 +1,4 @@
-package io.github.kgriff0n.event;
+package io.github.kgriff0n.event.listener;
 
 import io.github.kgriff0n.PlayersInformation;
 import io.github.kgriff0n.ServersLink;

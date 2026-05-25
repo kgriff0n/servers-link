@@ -79,7 +79,7 @@ public class SubServer extends Thread {
             }
         } catch (IOException e) {
             ServersLink.LOGGER.error("Gateway disconnected {}", e.getMessage());
-            SERVER.stop(true);
+            SERVER.halt(true);
         }
     }
 

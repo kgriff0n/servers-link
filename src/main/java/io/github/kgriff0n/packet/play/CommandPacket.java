@@ -4,15 +4,14 @@ import io.github.kgriff0n.packet.Packet;
 import io.github.kgriff0n.api.ServersLinkApi;
 import io.github.kgriff0n.server.Settings;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.command.permission.PermissionPredicate;
-import net.minecraft.server.PlayerConfigEntry;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
-
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.PermissionSet;
+import net.minecraft.server.players.NameAndId;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 import java.util.UUID;
 
 import static io.github.kgriff0n.ServersLink.SERVER;
@@ -45,38 +44,38 @@ public class CommandPacket implements Packet {
         } else {
             cmd = command;
         }
-        ServerCommandSource source;
+        CommandSourceStack source;
 
-        ServerPlayerEntity player = null;
+        ServerPlayer player = null;
         if (uuid != null) {
             player = ServersLinkApi.getDummyPlayer(uuid);
         }
 
         if (player != null) {
-            source = new ServerCommandSource(
-                    player.getCommandOutput(),
-                    player.getEntityPos(),
-                    player.getRotationClient(),
-                    player.getEntityWorld() instanceof ServerWorld ? player.getEntityWorld() : null,
-                    SERVER.getPermissionLevel(new PlayerConfigEntry(player.getUuid(), player.getName().getString())),
+            source = new CommandSourceStack(
+                    player.commandSource(),
+                    player.position(),
+                    player.getRotationVector(),
+                    player.level() instanceof ServerLevel ? player.level() : null,
+                    SERVER.getProfilePermissions(new NameAndId(player.getUUID(), player.getName().getString())),
                     "do-not-send-back",
                     player.getDisplayName(),
-                    player.getEntityWorld().getServer(),
+                    player.level().getServer(),
                     player
             );
         } else {
-            source = new ServerCommandSource(
+            source = new CommandSourceStack(
                     SERVER,
-                    SERVER.getOverworld() == null ? Vec3d.ZERO : Vec3d.of(SERVER.getOverworld().getSpawnPoint().getPos()),
-                    Vec2f.ZERO,
-                    SERVER.getOverworld(),
-                    PermissionPredicate.ALL,
+                    SERVER.overworld() == null ? Vec3.ZERO : Vec3.atLowerCornerOf(SERVER.overworld().getRespawnData().pos()),
+                    Vec2.ZERO,
+                    SERVER.overworld(),
+                    PermissionSet.ALL_PERMISSIONS,
                     "do-not-send-back",
-                    Text.literal("Server"),
+                    Component.literal("Server"),
                     SERVER,
                     null
             );
         }
-        SERVER.getCommandManager().parseAndExecute(source, cmd);
+        SERVER.getCommands().performPrefixedCommand(source, cmd);
     }
 }

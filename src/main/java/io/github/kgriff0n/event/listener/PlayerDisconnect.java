@@ -1,4 +1,4 @@
-package io.github.kgriff0n.event;
+package io.github.kgriff0n.event.listener;
 
 import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.packet.play.PlayerDisconnectPacket;
@@ -8,16 +8,15 @@ import io.github.kgriff0n.socket.SubServer;
 import io.github.kgriff0n.api.ServersLinkApi;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import java.util.UUID;
 
 public class PlayerDisconnect implements ServerPlayConnectionEvents.Disconnect {
     @Override
-    public void onPlayDisconnect(ServerPlayNetworkHandler serverPlayNetworkHandler, MinecraftServer minecraftServer) {
-        ServerPlayerEntity player = serverPlayNetworkHandler.player;
-        UUID uuid = player.getUuid();
+    public void onPlayDisconnect(ServerGamePacketListenerImpl serverPlayNetworkHandler, MinecraftServer minecraftServer) {
+        ServerPlayer player = serverPlayNetworkHandler.player;
+        UUID uuid = player.getUUID();
         PlayerDisconnectPacket packet = new PlayerDisconnectPacket(uuid);
 
         // Remove player from list

@@ -3,15 +3,15 @@ package io.github.kgriff0n.mixin;
 import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.api.ServersLinkApi;
 import io.github.kgriff0n.util.PositionOverride;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.nbt.NbtSizeTracker;
-import net.minecraft.server.PlayerConfigEntry;
-import net.minecraft.util.WorldSavePath;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.PlayerSaveHandler;
+import net.minecraft.nbt.Tag;
+import net.minecraft.server.players.NameAndId;
+import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.level.storage.PlayerDataStorage;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -24,28 +24,28 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.UUID;
 
-@Mixin(PlayerSaveHandler.class)
+@Mixin(PlayerDataStorage.class)
 public class PlayerSaveHandlerMixin {
 
     @Inject(
-            method = "loadPlayerData(Lnet/minecraft/server/PlayerConfigEntry;Ljava/lang/String;)Ljava/util/Optional;",
+            method = "load(Lnet/minecraft/server/players/NameAndId;Ljava/lang/String;)Ljava/util/Optional;",
             at = @At("RETURN"),
             cancellable = true
     )
-    private void modifyPlayerData(PlayerConfigEntry playerConfigEntry, String extension, CallbackInfoReturnable<Optional<NbtCompound>> cir) {
-        Optional<NbtCompound> optional = cir.getReturnValue();
+    private void modifyPlayerData(NameAndId playerConfigEntry, String extension, CallbackInfoReturnable<Optional<CompoundTag>> cir) {
+        Optional<CompoundTag> optional = cir.getReturnValue();
 
         optional.ifPresent(nbt -> {
             Path path = ServersLink.SERVER
-                    .getSavePath(WorldSavePath.ROOT)
+                    .getWorldPath(LevelResource.ROOT)
                     .resolve("sl-playerdata")
-                    .resolve(playerConfigEntry.id().toString() + ".dat");
+                    .resolve(playerConfigEntry.id() + ".dat");
 
             if (Files.exists(path)) {
                 try (InputStream is = Files.newInputStream(path)) {
-                    NbtCompound savedNbt = NbtIo.readCompressed(is, NbtSizeTracker.ofUnlimitedBytes());
+                    CompoundTag savedNbt = NbtIo.readCompressed(is, NbtAccounter.unlimitedHeap());
                     for (String key : ServersLinkApi.getPlayerDataKeys()) {
-                        NbtElement element = savedNbt.get(key);
+                        Tag element = savedNbt.get(key);
                         if (element != null) {
                             nbt.put(key, element);
                         } else {
@@ -65,8 +65,8 @@ public class PlayerSaveHandlerMixin {
             UUID playerUUID = playerConfigEntry.id();
             if (ServersLinkApi.shouldOverridePosition(playerUUID)) {
                 PositionOverride override = ServersLinkApi.getPositionOverride(playerUUID);
-                nbt.put("Pos", Vec3d.CODEC, override.position());
-                nbt.put("Rotation", Vec2f.CODEC, override.rotation());
+                nbt.store("Pos", Vec3.CODEC, override.position());
+                nbt.store("Rotation", Vec2.CODEC, override.rotation());
                 nbt.putString("Dimension", override.world());
             }
         });

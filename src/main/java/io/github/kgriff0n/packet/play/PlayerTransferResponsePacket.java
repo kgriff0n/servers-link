@@ -3,16 +3,15 @@ package io.github.kgriff0n.packet.play;
 import io.github.kgriff0n.PlayersInformation;
 import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.api.ServersLinkApi;
-import io.github.kgriff0n.event.ServerTick;
+import io.github.kgriff0n.event.listener.ServerTick;
 import io.github.kgriff0n.packet.Packet;
 import io.github.kgriff0n.packet.PacketHeader;
 import io.github.kgriff0n.server.ServerInfo;
 import io.github.kgriff0n.server.Settings;
 import io.github.kgriff0n.socket.Gateway;
-import net.minecraft.network.packet.s2c.common.ServerTransferS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
-
 import java.util.UUID;
+import net.minecraft.network.protocol.common.ClientboundTransferPacket;
+import net.minecraft.server.level.ServerPlayer;
 
 public class PlayerTransferResponsePacket extends PacketHeader implements Packet {
 
@@ -29,13 +28,13 @@ public class PlayerTransferResponsePacket extends PacketHeader implements Packet
     @Override
     public void onReceive() {
         ServerInfo server = ServersLinkApi.getServer(sender);
-        ServerPlayerEntity player = ServersLink.SERVER.getPlayerManager().getPlayer(uuid);
+        ServerPlayer player = ServersLink.SERVER.getPlayerList().getPlayer(uuid);
         if ((flags & PREVENT_LEAVE_MESSAGE) != 0) {
             ServersLinkApi.getPreventDisconnect().add(uuid);
         }
         if (server != null && player != null) {
-            player.networkHandler.sendPacket(new ServerTransferS2CPacket(server.getIp(), server.getPort()));
-            ServerTick.scheduleDisconnect(player.getUuid(), 20);
+            player.connection.send(new ClientboundTransferPacket(server.getIp(), server.getPort()));
+            ServerTick.scheduleDisconnect(player.getUUID(), 20);
         }
     }
 

@@ -4,9 +4,8 @@ import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.api.ServersLinkApi;
 import io.github.kgriff0n.packet.Packet;
 import io.github.kgriff0n.packet.PacketHeader;
-import net.minecraft.server.network.ServerPlayerEntity;
-
 import java.util.UUID;
+import net.minecraft.server.level.ServerPlayer;
 
 public class TeleportationResponsePacket extends PacketHeader implements Packet {
 
@@ -32,9 +31,9 @@ public class TeleportationResponsePacket extends PacketHeader implements Packet 
 
     @Override
     public void onReceive() {
-        ServerPlayerEntity player = ServersLink.SERVER.getPlayerManager().getPlayer(requesterUuid);
+        ServerPlayer player = ServersLink.SERVER.getPlayerList().getPlayer(requesterUuid);
         if (player != null) {
-            PlayerTransferRequestPacket transferPacket = new PlayerTransferRequestPacket(player.getUuid(), recipient, sender, targetX, targetY, targetZ, yaw, pitch, world);
+            PlayerTransferRequestPacket transferPacket = new PlayerTransferRequestPacket(player.getUUID(), recipient, sender, targetX, targetY, targetZ, yaw, pitch, world);
             ServersLinkApi.send(transferPacket);
         }
     }

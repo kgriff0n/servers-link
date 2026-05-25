@@ -4,9 +4,9 @@ import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import io.github.kgriff0n.packet.Packet;
 import io.github.kgriff0n.server.Settings;
-import net.minecraft.registry.RegistryOps;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.TextCodecs;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.resources.RegistryOps;
+import net.minecraft.server.level.ServerPlayer;
 
 import static io.github.kgriff0n.ServersLink.SERVER;
 
@@ -28,9 +28,9 @@ public class PlayerChatPacket implements Packet {
     @Override
     public void onReceive() {
         /* Send message */
-        ServerPlayerEntity player = SERVER.getPlayerManager().getPlayer(receiver);
+        ServerPlayer player = SERVER.getPlayerList().getPlayerByName(receiver);
         if (player != null) {
-            player.sendMessage(TextCodecs.CODEC.parse(RegistryOps.of(JsonOps.INSTANCE, SERVER.getRegistryManager()), JsonParser.parseString(serializedMessage)).getOrThrow());
+            player.sendSystemMessage(ComponentSerialization.CODEC.parse(RegistryOps.create(JsonOps.INSTANCE, SERVER.registryAccess()), JsonParser.parseString(serializedMessage)).getOrThrow());
         }
     }
 }

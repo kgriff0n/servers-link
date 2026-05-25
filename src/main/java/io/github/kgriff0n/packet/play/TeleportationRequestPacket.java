@@ -4,10 +4,9 @@ import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.api.ServersLinkApi;
 import io.github.kgriff0n.packet.Packet;
 import io.github.kgriff0n.packet.PacketHeader;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.Vec3d;
-
 import java.util.UUID;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.phys.Vec3;
 
 public class TeleportationRequestPacket extends PacketHeader implements Packet {
 
@@ -22,17 +21,17 @@ public class TeleportationRequestPacket extends PacketHeader implements Packet {
 
     @Override
     public void onReceive() {
-        ServerPlayerEntity player = ServersLink.SERVER.getPlayerManager().getPlayer(targetUuid);
-        Vec3d pos = player != null ? player.getEntityPos() : null;
+        ServerPlayer player = ServersLink.SERVER.getPlayerList().getPlayer(targetUuid);
+        Vec3 pos = player != null ? player.position() : null;
         if (pos != null) {
             TeleportationResponsePacket packet = new TeleportationResponsePacket(
                     requesterUuid,
-                    pos.getX(),
-                    pos.getY(),
-                    pos.getZ(),
-                    player.getYaw(),
-                    player.getPitch(),
-                    player.getEntityWorld().getRegistryKey().getValue().toString(),
+                    pos.x(),
+                    pos.y(),
+                    pos.z(),
+                    player.getYRot(),
+                    player.getXRot(),
+                    player.level().dimension().identifier().toString(),
                     ServersLinkApi.getServerName(),
                     sender
             );

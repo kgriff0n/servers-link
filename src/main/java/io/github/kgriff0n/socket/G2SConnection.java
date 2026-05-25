@@ -10,10 +10,6 @@ import io.github.kgriff0n.server.Group;
 import io.github.kgriff0n.server.ServerInfo;
 import io.github.kgriff0n.api.ServersLinkApi;
 import io.github.kgriff0n.server.Settings;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -21,6 +17,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 
 import static io.github.kgriff0n.ServersLink.IS_RUNNING;
 import static io.github.kgriff0n.ServersLink.SERVER;
@@ -93,11 +92,11 @@ public class G2SConnection extends Thread {
                     Settings serverSettings = Gateway.getInstance().getGroup(server.getGroupId()).getSettings();
                     if (globalSettings.isPlayerListSynced() && serverSettings.isPlayerListSynced()) {
                         // Send real players
-                        for (ServerPlayerEntity player : SERVER.getPlayerManager().getPlayerList()) {
+                        for (ServerPlayer player : SERVER.getPlayerList().getPlayers()) {
                             send(new NewPlayerPacket(player.getGameProfile()));
                         }
                         // Send fake players
-                        for (ServerPlayerEntity player : ServersLinkApi.getDummyPlayers()) {
+                        for (ServerPlayer player : ServersLinkApi.getDummyPlayers()) {
                             send(new NewPlayerPacket(player.getGameProfile()));
                         }
                     } else if (!globalSettings.isPlayerListSynced() && serverSettings.isPlayerListSynced()) {
@@ -141,7 +140,7 @@ public class G2SConnection extends Thread {
                 ServersLink.LOGGER.info(this.server.toString());
             }
             ServersLinkApi.disconnectServer(this.server);
-            ServersLinkApi.broadcastToOp(Text.literal("Sub-server " + server.getName() + " has disconnected").formatted(Formatting.RED));
+            ServersLinkApi.broadcastToOp(Component.literal("Sub-server " + server.getName() + " has disconnected").withStyle(ChatFormatting.RED));
             this.interrupt();
         } catch (ClassNotFoundException e) {
             ServersLink.LOGGER.error("Receive invalid data: {}", e.getMessage());

@@ -1,7 +1,7 @@
 package io.github.kgriff0n.util;
 
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 
-public record PositionOverride(Vec3d position, Vec2f rotation, String world) {
+public record PositionOverride(Vec3 position, Vec2 rotation, String world) {
 }

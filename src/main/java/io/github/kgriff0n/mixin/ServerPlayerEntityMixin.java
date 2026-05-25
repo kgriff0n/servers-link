@@ -2,14 +2,14 @@ package io.github.kgriff0n.mixin;
 
 import io.github.kgriff0n.ServersLink;
 import io.github.kgriff0n.api.ServersLinkApi;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.storage.NbtWriteView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.WorldSavePath;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -22,7 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
-@Mixin(ServerPlayerEntity.class)
+@Mixin(ServerPlayer.class)
 public abstract class ServerPlayerEntityMixin {
 
     @Shadow
@@ -30,30 +30,30 @@ public abstract class ServerPlayerEntityMixin {
     private MinecraftServer server;
 
 
-    @Inject(at = @At("TAIL"), method = "writeCustomData")
-    private void writeCustomData(WriteView view, CallbackInfo ci) {
-        if (view instanceof NbtWriteView originalNbtWriteView) {
-            ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
+    @Inject(at = @At("TAIL"), method = "addAdditionalSaveData")
+    private void writeCustomData(ValueOutput view, CallbackInfo ci) {
+        if (view instanceof TagValueOutput originalNbtWriteView) {
+            ServerPlayer player = (ServerPlayer) (Object) this;
 
             Path path = server
-                    .getSavePath(WorldSavePath.ROOT)
+                    .getWorldPath(LevelResource.ROOT)
                     .resolve("sl-playerdata")
-                    .resolve(player.getUuidAsString() + ".dat");
+                    .resolve(player.getStringUUID() + ".dat");
 
-            NbtCompound originalNbt = originalNbtWriteView.getNbt();
-            NbtCompound newNbt = new NbtCompound();
+            CompoundTag originalNbt = originalNbtWriteView.buildResult();
+            CompoundTag newNbt = new CompoundTag();
             for (String key : ServersLinkApi.getPlayerDataKeys()) {
-                NbtElement element = originalNbt.get(key);
+                Tag element = originalNbt.get(key);
                 if (element != null) newNbt.put(key, element);
             }
 
-            NbtCompound nbtCompound = newNbt.copy();
+            CompoundTag nbtCompound = newNbt.copy();
             CompletableFuture.runAsync(() -> {
                 try {
                     Files.createDirectories(path.getParent());
                     NbtIo.writeCompressed(nbtCompound, path);
                 } catch (IOException e) {
-                    ServersLink.LOGGER.warn("Unable to save servers-link playerdata for {} {}", player.getUuidAsString(), e);
+                    ServersLink.LOGGER.warn("Unable to save servers-link playerdata for {} {}", player.getStringUUID(), e);
                 }
             });
         }

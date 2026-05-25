@@ -1,4 +1,4 @@
-package io.github.kgriff0n.event;
+package io.github.kgriff0n.event.listener;
 
 import io.github.kgriff0n.PlayersInformation;
 import io.github.kgriff0n.socket.SubServer;
@@ -14,7 +14,7 @@ public class ServerStart implements ServerLifecycleEvents.ServerStarted {
     public void onServerStarted(MinecraftServer minecraftServer) {
         if (CONFIG_ERROR) {
             ServersLink.LOGGER.error("You must configure servers-link before starting your server");
-            minecraftServer.stop(false);
+            minecraftServer.halt(false);
         } else {
             /* Initialize SERVER */
             ServersLink.SERVER = minecraftServer;

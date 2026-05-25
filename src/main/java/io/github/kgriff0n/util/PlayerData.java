@@ -12,10 +12,10 @@ import static io.github.kgriff0n.ServersLink.SERVER;
 
 public class PlayerData {
 
-    private static final Path PATH = FabricLoader.getInstance().getGameDir().resolve(SERVER.getSaveProperties().getLevelName());
+    private static final Path PATH = FabricLoader.getInstance().getGameDir().resolve(SERVER.getWorldData().getLevelName()).resolve("players");
 
     public static Path getDataPath(UUID uuid) {
-        Path playerPath = PATH.resolve("playerdata").resolve(uuid + ".dat");
+        Path playerPath = PATH.resolve("data").resolve(uuid + ".dat");
         return playerPath;
     }
 

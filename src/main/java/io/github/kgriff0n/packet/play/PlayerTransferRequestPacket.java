@@ -5,10 +5,9 @@ import io.github.kgriff0n.packet.Packet;
 import io.github.kgriff0n.packet.PacketHeader;
 import io.github.kgriff0n.server.Settings;
 import io.github.kgriff0n.socket.Gateway;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
-
 import java.util.UUID;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 
 public class PlayerTransferRequestPacket extends PacketHeader implements Packet {
 
@@ -45,7 +44,7 @@ public class PlayerTransferRequestPacket extends PacketHeader implements Packet 
         ServersLinkApi.addWaitingPlayer(uuid);
         ServersLinkApi.send(new PlayerTransferResponsePacket(uuid, ServersLinkApi.getServerName(), sender));
         if ((flags & OVERRIDE_POSITION) != 0) {
-            ServersLinkApi.addPositionOverride(uuid, new Vec3d(targetX, targetY, targetZ), new Vec2f(yaw, pitch), world);
+            ServersLinkApi.addPositionOverride(uuid, new Vec3(targetX, targetY, targetZ), new Vec2(yaw, pitch), world);
         }
         if ((flags & PREVENT_JOIN_MESSAGE) != 0) {
             ServersLinkApi.getPreventConnect().add(uuid);

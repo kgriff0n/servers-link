@@ -2,8 +2,7 @@ package io.github.kgriff0n;
 
 import net.minecraft.nbt.*;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.WorldSavePath;
-
+import net.minecraft.world.level.storage.LevelResource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -25,11 +24,11 @@ public class PlayersInformation {
     }
 
     public static void saveNbt(MinecraftServer server) {
-        NbtCompound nbt = new NbtCompound();
+        CompoundTag nbt = new CompoundTag();
         lastServer.forEach((uuid, name) -> nbt.putString(uuid.toString(), name));
 
         Path dataFile = server
-                .getSavePath(WorldSavePath.ROOT)
+                .getWorldPath(LevelResource.ROOT)
                 .resolve("data")
                 .resolve("servers_link.nbt");
 
@@ -42,14 +41,14 @@ public class PlayersInformation {
 
     public static void loadNbt(MinecraftServer server) {
         Path dataFile = server
-                .getSavePath(WorldSavePath.ROOT)
+                .getWorldPath(LevelResource.ROOT)
                 .resolve("data")
                 .resolve("servers_link.nbt");
 
         if (Files.exists(dataFile)) {
             try (InputStream is = Files.newInputStream(dataFile)) {
-                NbtCompound nbt = NbtIo.readCompressed(is, NbtSizeTracker.ofUnlimitedBytes());
-                for (String uuid : nbt.getKeys()) {
+                CompoundTag nbt = NbtIo.readCompressed(is, NbtAccounter.unlimitedHeap());
+                for (String uuid : nbt.keySet()) {
                     UUID player = UUID.fromString(uuid);
                     nbt.getString(uuid).ifPresent(string -> lastServer.put(player, string));
                 }
