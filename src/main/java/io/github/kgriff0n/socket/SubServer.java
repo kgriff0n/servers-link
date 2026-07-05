@@ -77,8 +77,8 @@ public class SubServer extends Thread {
                     ServersLink.LOGGER.error("Receive invalid data");
                 }
             }
-        } catch (IOException e) {
-            ServersLink.LOGGER.error("Gateway disconnected {}", e.getMessage());
+        } catch (Exception e) {
+            ServersLink.LOGGER.error("Gateway disconnected ", e);
             SERVER.halt(true);
         }
     }

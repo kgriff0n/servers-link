@@ -52,7 +52,7 @@ public class PlayerJoin implements ServerPlayConnectionEvents.Join {
 
                     /* Send player information to other servers */
                     gateway.sendToAllFrom(ServersLink.getServerInfo().getName(), dummyPlayer);
-                    gateway.sendToAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
+                    gateway.sendToAll(new ServersInfoPacket(ServersLinkApi.getImmutableServerList()));
 
                     if (gateway.shouldReconnectToLastServer() && lastServer != null && !lastServer.isEmpty() && (lastServerInfo == null || lastServerInfo.isDown())) {
                         newPlayer.sendSystemMessage(Component.literal("An unexpected error occurred while attempting to reconnect you to your previous server").withStyle(ChatFormatting.RED));

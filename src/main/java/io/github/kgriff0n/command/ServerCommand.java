@@ -16,11 +16,16 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.coordinates.Vec2Argument;
+import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.PermissionLevel;
 import net.minecraft.world.entity.Relative;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
+
 import java.util.EnumSet;
 import java.util.Locale;
 
@@ -47,6 +52,21 @@ public class ServerCommand {
                                 .then(argument("player", EntityArgument.player())
                                         .requires(Permissions.require("server.join.other", PermissionLevel.GAMEMASTERS))
                                         .executes(context -> join(EntityArgument.getPlayer(context, "player"), StringArgumentType.getString(context, "server")))
+                                        .then(argument("position", Vec3Argument.vec3())
+                                                .then(argument("rotation", Vec2Argument.vec2())
+                                                        .then(argument("world", StringArgumentType.string())
+                                                                .requires(Permissions.require("server.join.position", PermissionLevel.GAMEMASTERS))
+                                                                .executes(context -> joinPos(
+                                                                        EntityArgument.getPlayer(context, "player"),
+                                                                        StringArgumentType.getString(context, "server"),
+                                                                        Vec3Argument.getVec3(context, "position"),
+                                                                        Vec2Argument.getVec2(context, "rotation"),
+                                                                        StringArgumentType.getString(context, "world")
+                                                                        )
+                                                                )
+                                                        )
+                                                )
+                                        )
                                 )
                         )
 
@@ -121,7 +141,6 @@ public class ServerCommand {
 
     private static int join(ServerPlayer player, String serverName) {
         if (player != null) {
-            /* Save player pos */
             String name = ServersLink.getServerInfo().getName();
 
             if (name.equals(serverName)) {
@@ -130,6 +149,21 @@ public class ServerCommand {
                 player.sendSystemMessage(Component.literal("This server does not exist").withStyle(ChatFormatting.RED));
             } else {
                 ServersLinkApi.transferPlayer(player, ServersLink.getServerInfo().getName(), serverName);
+            }
+        }
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int joinPos(ServerPlayer player, String serverName, Vec3 pos, Vec2 rotation, String world) {
+        if (player != null) {
+            String name = ServersLink.getServerInfo().getName();
+
+            if (name.equals(serverName)) {
+                player.sendSystemMessage(Component.literal("You are already connected to this server").withStyle(ChatFormatting.RED));
+            } else if (ServersLinkApi.getServer(serverName) == null) {
+                player.sendSystemMessage(Component.literal("This server does not exist").withStyle(ChatFormatting.RED));
+            } else {
+                ServersLinkApi.transferPlayer(player, ServersLink.getServerInfo().getName(), serverName, pos, rotation, world);
             }
         }
         return Command.SINGLE_SUCCESS;

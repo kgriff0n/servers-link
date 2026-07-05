@@ -36,7 +36,7 @@ public class ServerTick implements ServerTickEvents.StartTick {
             /* update self */
             ServersLink.getServerInfo().setTps(tps);
             if (ServersLink.isGateway) {
-                Gateway.getInstance().sendToAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
+                Gateway.getInstance().sendToAll(new ServersInfoPacket(ServersLinkApi.getImmutableServerList()));
             } else {
                 SubServer.getInstance().send(new ServerStatusPacket(ServersLink.getServerInfo().getName(), tps, false));
             }

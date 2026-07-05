@@ -80,7 +80,8 @@ public class G2SConnection extends Thread {
 
             while (IS_RUNNING) {
                 Packet packet = (Packet) in.readObject();
-                if (Gateway.getInstance().isDebugEnabled()) ServersLink.LOGGER.info("\u001B[95mPacket received {}", packet.getClass());
+                if (Gateway.getInstance().isDebugEnabled())
+                    ServersLink.LOGGER.info("\u001B[95mPacket received {}", packet.getClass());
                 if (packet instanceof NewServerPacket pkt) {
                     this.server = pkt.getServer();
                     this.setName(String.format("%s thread", server.getName()));
@@ -135,10 +136,8 @@ public class G2SConnection extends Thread {
             }
             socket.close();
         } catch (IOException e) {
-            if (e.getMessage() != null) {
-                ServersLink.LOGGER.error("Error {} in sub-server {}", e.getMessage(), server.getName());
-                ServersLink.LOGGER.info(this.server.toString());
-            }
+            ServersLink.LOGGER.error("Error {} in sub-server {}", e.getMessage(), server.getName());
+            ServersLink.LOGGER.info(this.server.toString());
             ServersLinkApi.disconnectServer(this.server);
             ServersLinkApi.broadcastToOp(Component.literal("Sub-server " + server.getName() + " has disconnected").withStyle(ChatFormatting.RED));
             this.interrupt();

@@ -40,6 +40,6 @@ public class PlayerDisconnectPacket implements Packet {
     @Override
     public void gatewayLogic() {
         Gateway.getInstance().removePlayer(uuid);
-        Gateway.getInstance().sendToAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
+        Gateway.getInstance().sendToAll(new ServersInfoPacket(ServersLinkApi.getImmutableServerList()));
     }
 }

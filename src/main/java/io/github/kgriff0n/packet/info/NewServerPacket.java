@@ -34,6 +34,6 @@ public class NewServerPacket implements Packet {
         } catch (IOException e) {
             ServersLink.LOGGER.error("Unable to send data to {}", this.server.getName());
         }
-        Gateway.getInstance().sendToAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
+        Gateway.getInstance().sendToAll(new ServersInfoPacket(ServersLinkApi.getImmutableServerList()));
     }
 }

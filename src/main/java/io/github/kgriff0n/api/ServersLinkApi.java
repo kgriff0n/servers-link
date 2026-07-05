@@ -66,6 +66,14 @@ public class ServersLinkApi {
         return serverList;
     }
 
+    public static ArrayList<ServerInfo> getImmutableServerList() {
+        ArrayList<ServerInfo> list = new ArrayList<>();
+        for (ServerInfo server : serverList.keySet()) {
+            list.add(server.copy());
+        }
+        return list;
+    }
+
     public static ArrayList<ServerInfo> getServerList() {
         return new ArrayList<>(serverList.keySet());
     }
@@ -140,10 +148,10 @@ public class ServersLinkApi {
                 gateway.sendToAll(new PlayerDisconnectPacket(uuid));
                 dummyPlayers.removeIf(player -> player.getUUID().equals(uuid));
             });
-            gateway.sendToAll(new ServersInfoPacket(ServersLinkApi.getServerList()));
             server.getPlayersList().clear();
             server.getGameProfile().clear();
             serverList.put(server, new G2SConnection(null));
+            gateway.sendToAll(new ServersInfoPacket(ServersLinkApi.getImmutableServerList()));
         });
     }
 
@@ -267,6 +275,16 @@ public class ServersLinkApi {
      */
     public static void transferPlayer(ServerPlayer player, String from, String to) {
         PlayerTransferRequestPacket transferPacket = new PlayerTransferRequestPacket(player.getUUID(), from, to);
+        ServersLinkApi.send(transferPacket);
+    }
+
+    public static void transferPlayer(ServerPlayer player, String from, String to, Vec3 position, Vec2 rotation, String world) {
+        PlayerTransferRequestPacket transferPacket = new PlayerTransferRequestPacket(
+                player.getUUID(), from, to,
+                position.x(), position.y(), position.z(),
+                rotation.x, rotation.y,
+                world
+        );
         ServersLinkApi.send(transferPacket);
     }
 

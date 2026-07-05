@@ -21,8 +21,8 @@ public class ServerInfo implements Serializable {
     private float tps;
     private boolean down;
 
-    private final HashMap<UUID, String> playersList;
-    private final HashMap<UUID, String> playersPropertiesList;
+    private HashMap<UUID, String> playersList;
+    private HashMap<UUID, String> playersPropertiesList;
 
     public ServerInfo(String groupId, String name, String ip, int port) {
         this.groupId = groupId;
@@ -116,5 +116,22 @@ public class ServerInfo implements Serializable {
     @Override
     public int hashCode() {
         return this.name.hashCode();
+    }
+
+    public ServerInfo copy() {
+        ServerInfo copy = new ServerInfo(groupId, name, ip, port);
+        copy.setTps(tps);
+        copy.setDown(down);
+        copy.setPlayersList(new HashMap<>(playersList));
+        copy.setPlayersPropertiesList(new HashMap<>(playersPropertiesList));
+        return copy;
+    }
+
+    private void setPlayersList(HashMap<UUID, String> playersList) {
+        this.playersList = playersList;
+    }
+
+    private void setPlayersPropertiesList(HashMap<UUID, String> playersPropertiesList) {
+        this.playersPropertiesList = playersPropertiesList;
     }
 }
