@@ -8,6 +8,7 @@ import io.github.kgriff0n.event.listener.*;
 import io.github.kgriff0n.server.ServerInfo;
 import net.fabricmc.api.ModInitializer;
 
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -55,7 +56,7 @@ public class ServersLink implements ModInitializer {
 		ServerLifecycleEvents.SERVER_STARTED.register(new ServerStart());
 		ServerLifecycleEvents.SERVER_STOPPING.register(new ServerStopping());
 		ServerLifecycleEvents.SERVER_STOPPED.register(new ServerStopped());
-		ServerPlayConnectionEvents.JOIN.register(new PlayerJoin());
+		ServerPlayerEvents.JOIN.register(new PlayerJoin());
 		ServerPlayConnectionEvents.DISCONNECT.register(new PlayerDisconnect());
 		ServerTickEvents.START_SERVER_TICK.register(new ServerTick());
     }
